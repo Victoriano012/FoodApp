@@ -91,7 +91,6 @@ function Recipes() {
   };
 
   const handleSave = (updatedRecipe) => {
-    console.log('handleSave called with updatedRecipe:', JSON.stringify(updatedRecipe.ingredients));
     setSelectedRecipe(updatedRecipe);
     const updatedRecipes = recipes.map(recipe =>
       recipe.name === updatedRecipe.name ? updatedRecipe : recipe
@@ -110,7 +109,6 @@ function Recipes() {
   };
 
   const handleIngredientChange = (index, updates) => {
-    console.log('handleIngredientChange called:', { index, updates });
     const updatedIngredients = selectedRecipe.ingredients.map((ing, i) =>
       i === index ? { ...ing, ...updates } : ing
     );
@@ -205,20 +203,17 @@ function Recipes() {
                         onChange={(e) => handleIngredientChange(index, { quantity: e.target.value })}
                         className="ingredient-quantity-input ingredient-quantity-input-styled"
                       />
-                      <select
+                      <input
+                        type="text"
                         value={ing.unit}
-                        onChange={(e) => handleIngredientChange(index, { unit: e.target.value })}
                         className="ingredient-unit-input ingredient-unit-input-styled"
-                      >
-                        <option value=""> </option>
-                        <option value="g">g</option>
-                      </select>
+                        readOnly
+                      />
                       <div style={{ position: 'relative' }}>
                         <input
                           type="text"
                           value={ing.name}
                           onChange={(e) => {
-                            console.log('Input onChange:', e.target.value);
                             handleIngredientChange(index, { name: e.target.value });
                             if (e.target.value === '') {
                               setSuggestions([]);
@@ -253,7 +248,6 @@ function Recipes() {
                                 key={sIndex}
                                 className="suggestion-item"
                                 onClick={() => {
-                                  console.log('Suggestion clicked:', suggestion.name, suggestion.unit);
                                   handleIngredientChange(index, { name: suggestion.name, unit: suggestion.unit });
                                   setShowSuggestions(false);
                                   setActiveIngredientIndex(null);

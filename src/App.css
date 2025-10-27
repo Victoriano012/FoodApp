@@ -350,7 +350,7 @@ nav a.active {
 }
 
 .ingredient-unit-input-styled {
-  width: 30px;
+  width: 15px;
   font-family: inherit;
   font-size: inherit;
 }
@@ -358,7 +358,7 @@ nav a.active {
 .ingredient-name-input-styled {
   flex-grow: 1;
   flex-shrink: 1;
-  max-width: 160px; /* Adjust as needed */
+  max-width: 180px; /* Adjust as needed */
   font-family: inherit;
   font-size: inherit;
 }
