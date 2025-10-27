@@ -334,3 +334,37 @@ nav a.active {
   background-color: transparent;
   overflow-y: hidden;
 }
+
+.ingredient-edit-row-styled {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  align-items: center;
+  margin-bottom: 0.8em;
+}
+
+.ingredient-quantity-input-styled {
+  width: 28px;
+  margin-right: 0.5em;
+  font-family: inherit;
+  font-size: inherit;
+}
+
+.ingredient-unit-input-styled {
+  width: 30px;
+  margin-right: 0.5em;
+  font-family: inherit;
+  font-size: inherit;
+}
+
+.ingredient-name-input-styled {
+  flex-grow: 1;
+  min-width: 50px; /* Added min-width */
+  font-family: inherit;
+  font-size: inherit;
+}
+
+.ingredient-trash-icon-styled {
+  margin-left: 0.5em;
+  font-size: 1.3rem;
+}

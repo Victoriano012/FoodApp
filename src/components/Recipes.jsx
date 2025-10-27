@@ -1,6 +1,6 @@
 
 import { useState, useEffect, useRef } from 'react';
-import { FiCheck, FiEdit3, FiTrash2 } from 'react-icons/fi';
+import { FiCheck, FiEdit3, FiTrash, FiTrash2 } from 'react-icons/fi';
 import { FaStar } from 'react-icons/fa';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -179,32 +179,29 @@ function Recipes() {
               {editMode ? (
                 <>
                   {selectedRecipe.ingredients.map((ing, index) => (
-                    <div key={index} className="ingredient-edit-row" style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' }}>
+                    <div key={index} className="ingredient-edit-row ingredient-edit-row-styled">
                       <input
                         type="number"
                         value={ing.quantity}
                         onChange={(e) => handleIngredientChange(index, 'quantity', e.target.value)}
-                        className="ingredient-quantity-input"
-                        style={{ width: '27px', fontSize: '1rem', marginRight: '0.3em' }} // Inline style for immediate visual change
+                        className="ingredient-quantity-input ingredient-quantity-input-styled"
                       />
                       <select
                         value={ing.unit}
                         onChange={(e) => handleIngredientChange(index, 'unit', e.target.value)}
-                        className="ingredient-unit-input"
-                        style={{ width: '30px', fontSize: '1rem', marginRight: '0.2em' }} // Inline style for immediate visual change
+                        className="ingredient-unit-input ingredient-unit-input-styled"
                       >
-                        <option value=""></option>
+                        <option value=" "> </option>
                         <option value="g">g</option>
                       </select>
                       <input
                         type="text"
                         value={ing.name}
                         onChange={(e) => handleIngredientChange(index, 'name', e.target.value)}
-                        className="ingredient-name-input"
-                        style={{ fontSize: '1rem', flexGrow: 1, marginRight: '0.3em' }} // flexGrow to take remaining space
+                        className="ingredient-name-input ingredient-name-input-styled"
                       />
-                      <FiTrash2
-                        className="delete-icon"
+                      <FiTrash
+                        className="delete-icon ingredient-trash-icon-styled"
                         onClick={() => handleDeleteIngredient(index)}
                       />
                     </div>
