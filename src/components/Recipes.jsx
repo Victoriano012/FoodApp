@@ -1,25 +1,36 @@
 
 import React, { useState, useEffect } from 'react';
 import { FiTrash2 } from 'react-icons/fi';
+import { FaStar, FaRegStar } from 'react-icons/fa';
+
+const StarRating = ({ score }) => {
+  const stars = [];
+  for (let i = 0; i < 5; i++) {
+    if (i < score) {
+      stars.push(<FaStar key={i} color="gold" />);
+    } else {
+      stars.push(<FaStar key={i} color="lightgray" />);
+    }
+  }
+  return <div className="star-rating">{stars}</div>;
+};
 
 function Recipes() {
   const [searchTerm, setSearchTerm] = useState('');
   const [newRecipe, setNewRecipe] = useState('');
-  const [selectedRecipe, setSelectedRecipe] = useState(null);
   const [recipes, setRecipes] = useState(() => {
     const storedRecipes = JSON.parse(localStorage.getItem('recipes'));
     if (storedRecipes) {
       return storedRecipes;
     } else {
       return [
-        { name: 'Apple Pie', score: 5, ingredients: [{ name: 'Apples', quantity: 3, unit: '' }], comment: 'Classic dessert' },
-        { name: 'Banana Bread', score: 4, ingredients: [{ name: 'Bananas', quantity: 2, unit: '' }], comment: 'Easy to make' },
+        { name: 'Apple Pie', score: 5, ingredients: [{ name: 'Apples', quantity: 3, unit: '' }, { name: 'Bananas', quantity: 2, unit: '' }, { name: 'Milk', quantity: 250, unit: 'g' }], comment: 'Classic dessert' },
         { name: 'Carrot Soup', score: 3, ingredients: [{ name: 'Carrots', quantity: 500, unit: 'g' }], comment: 'Healthy and delicious' },
-        { name: 'Milkshake', score: 5, ingredients: [{ name: 'Milk', quantity: 250, unit: 'g' }], comment: 'A tasty classic' },
         { name: 'Sandwich', score: 2, ingredients: [{ name: 'Bread', quantity: 2, unit: '' }], comment: 'Simple and quick' }
       ];
     }
   });
+  const [selectedRecipe, setSelectedRecipe] = useState(null);
 
   useEffect(() => {
     localStorage.setItem('recipes', JSON.stringify(recipes));
@@ -107,15 +118,15 @@ function Recipes() {
         <div className="popup-overlay" onClick={handleClosePopup}>
           <div className="popup" onClick={(e) => e.stopPropagation()}>
             <button className="close-button" onClick={handleClosePopup}>X</button>
-            <h2>{selectedRecipe.name}</h2>
-            <p>Score: {selectedRecipe.score}/5</p>
+            <h2 className='recipe-title'>{selectedRecipe.name}</h2>
+            <StarRating score={selectedRecipe.score} />
             <h3>Ingredients:</h3>
             <ul>
               {selectedRecipe.ingredients.map(ing => (
-                <li key={ing.name}>{ing.name} - {ing.quantity}{ing.unit}</li>
+                <li key={ing.name}>{ing.quantity}{ing.unit} {ing.name}</li>
               ))}
             </ul>
-            <h3>Comment:</h3>
+            <hr className="horizontal-line" />
             <p>{selectedRecipe.comment}</p>
           </div>
         </div>
