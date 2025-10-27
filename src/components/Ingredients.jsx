@@ -103,6 +103,7 @@ function Ingredients() {
                   <select
                     value={ingredient.unit}
                     onChange={(e) => handleUnitChange(ingredient.name, e.target.value)}
+                    className="unit-selector"
                   >
                     <option value=""> </option>
                     <option value="g">g</option>
