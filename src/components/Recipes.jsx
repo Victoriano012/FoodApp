@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { FiTrash2 } from 'react-icons/fi';
+import { FiEdit3, FiTrash, FiTrash2 } from 'react-icons/fi';
 import { FaStar, FaRegStar } from 'react-icons/fa';
 
 const StarRating = ({ score }) => {
@@ -129,6 +129,13 @@ function Recipes() {
               </ul>
               <hr className="horizontal-line" />
               <p>{selectedRecipe.comment}</p>
+            </div>
+            <div className="popup-buttons">
+              <FiTrash2
+                className="delete-icon"
+                onClick={(e) => handleDeleteRecipe(e, selectedRecipe.name)}
+              />
+              <FiEdit3 className="edit-icon" />
             </div>
           </div>
         </div>

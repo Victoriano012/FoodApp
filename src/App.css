@@ -281,3 +281,15 @@ nav a.active {
   border: none;
   border-top: 1px solid var(--lightgray);
 }
+
+.popup-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 1.5rem;
+  margin-right: 1.5rem;
+  font-size: 2em;
+}
+
+.edit-icon {
+  cursor: pointer;
+}
