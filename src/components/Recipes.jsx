@@ -10,6 +10,10 @@ function Recipes() {
   const [selectedRecipe, setSelectedRecipe] = useState(null);
   const [editMode, setEditMode] = useState(false);
   const [newRecipe, setNewRecipe] = useState('');
+  const [allIngredientNames, setAllIngredientNames] = useState([]);
+  const [suggestions, setSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [activeIngredientIndex, setActiveIngredientIndex] = useState(null);
   const commentTextAreaRef = useRef(null);
   const [recipes, setRecipes] = useState(() => {
     const storedRecipes = JSON.parse(localStorage.getItem('recipes'));
@@ -26,6 +30,8 @@ function Recipes() {
 
   useEffect(() => {
     localStorage.setItem('recipes', JSON.stringify(recipes));
+    const uniqueIngredientNames = Array.from(new Set(recipes.flatMap(recipe => recipe.ingredients.map(ing => ing.name))));
+    setAllIngredientNames(uniqueIngredientNames);
   }, [recipes]);
 
   useEffect(() => {
@@ -71,12 +77,7 @@ function Recipes() {
   const handleClosePopup = () => {
     if (editMode && selectedRecipe) {
       let finalRecipe = { ...selectedRecipe };
-      if (finalRecipe.ingredients.length > 0) {
-        const lastIngredient = finalRecipe.ingredients[finalRecipe.ingredients.length - 1];
-        if (lastIngredient.name === '' && lastIngredient.quantity === '') {
-          finalRecipe.ingredients = finalRecipe.ingredients.slice(0, -1);
-        }
-      }
+      finalRecipe.ingredients = finalRecipe.ingredients.filter(ing => !(ing.name === '' && ing.quantity === ''));
       handleSave(finalRecipe);
     }
     setSelectedRecipe(null);
@@ -204,12 +205,59 @@ function Recipes() {
                         <option value=""> </option>
                         <option value="g">g</option>
                       </select>
-                      <input
-                        type="text"
-                        value={ing.name}
-                        onChange={(e) => handleIngredientChange(index, 'name', e.target.value)}
-                        className="ingredient-name-input ingredient-name-input-styled"
-                      />
+                      <div style={{ position: 'relative', flexGrow: 1 }}>
+                        <input
+                          type="text"
+                          value={ing.name}
+                          onChange={(e) => {
+                            handleIngredientChange(index, 'name', e.target.value);
+                            if (e.target.value === '') {
+                              setSuggestions([]);
+                              setShowSuggestions(false);
+                            } else {
+                              const currentIngredientNames = new Set(selectedRecipe.ingredients.map(item => item.name.toLowerCase()));
+                              const filtered = allIngredientNames.filter(name =>
+                                name.toLowerCase().startsWith(e.target.value.toLowerCase()) &&
+                                !currentIngredientNames.has(name.toLowerCase())
+                              );
+                              setSuggestions(filtered);
+                              setShowSuggestions(true);
+                            }
+                          }}
+                          onFocus={() => {
+                            setActiveIngredientIndex(index);
+                            const currentIngredientNames = new Set(selectedRecipe.ingredients.map(item => item.name.toLowerCase()));
+                            const filtered = allIngredientNames.filter(name =>
+                              name.toLowerCase().startsWith(ing.name.toLowerCase()) &&
+                              !currentIngredientNames.has(name.toLowerCase())
+                            );
+                            setSuggestions(filtered);
+                            setShowSuggestions(true);
+                          }}
+                          onBlur={() => setTimeout(() => {
+                            setShowSuggestions(false);
+                            setActiveIngredientIndex(null);
+                          }, 100)}
+                          className="ingredient-name-input ingredient-name-input-styled"
+                        />
+                        {showSuggestions && activeIngredientIndex === index && suggestions.length > 0 && (
+                          <div className="suggestions-dropdown">
+                            {suggestions.map((suggestion, sIndex) => (
+                              <div
+                                key={sIndex}
+                                className="suggestion-item"
+                                onClick={() => {
+                                  handleIngredientChange(index, 'name', suggestion);
+                                  setShowSuggestions(false);
+                                  setActiveIngredientIndex(null);
+                                }}
+                              >
+                                {suggestion}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                       <FiTrash2
                         className="delete-icon ingredient-trash-icon-styled"
                         onClick={() => handleDeleteIngredient(index)}
@@ -264,12 +312,7 @@ function Recipes() {
               {editMode ? (
                 <FiCheck className="edit-icon" style={{ color: 'green' }} onClick={() => {
                   let finalRecipe = { ...selectedRecipe };
-                  if (finalRecipe.ingredients.length > 0) {
-                    const lastIngredient = finalRecipe.ingredients[finalRecipe.ingredients.length - 1];
-                    if (lastIngredient.name === '') {
-                      finalRecipe.ingredients = finalRecipe.ingredients.slice(0, -1);
-                    }
-                  }
+                  finalRecipe.ingredients = finalRecipe.ingredients.filter(ing => !(ing.name === '' && ing.quantity === ''));
                   handleSave(finalRecipe);
                   setEditMode(false);
                 }} />

@@ -377,6 +377,28 @@ nav a.active {
   border: none;
   cursor: pointer;
   border-radius: 20px;
-  margin-bottom: -0.5em;
+  margin-top: 1em;
   align-self: flex-start; /* Align to the start of the flex container */
+}
+
+.suggestions-dropdown {
+  position: absolute;
+  background-color: white;
+  border: 1px solid #ccc;
+  max-height: 150px;
+  overflow-y: auto;
+  z-index: 100;
+  left: 0;
+  right: 0; /* Make it span the width of its parent */
+  margin-top: 0.2em; /* Space between input and dropdown */
+  border-radius: 5px;
+}
+
+.suggestion-item {
+  padding: 0.5em 1em;
+  cursor: pointer;
+}
+
+.suggestion-item:hover {
+  background-color: var(--verylightgray);
 }
