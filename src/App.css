@@ -219,10 +219,9 @@ nav a.active {
 
 .popup {
   background-color: white;
-  padding: 2rem;
   border-radius: 10px;
-  width: 75%;
-  height: 85%;
+  width: 90%;
+  height: 90%;
   position: relative;
   display: flex;
   flex-direction: column;
@@ -231,6 +230,7 @@ nav a.active {
 .scrollable-content {
   overflow-y: auto;
   flex-grow: 1;
+  padding: 0 2rem 2rem 2rem;
 }
 
 .popup h2 {
@@ -267,12 +267,14 @@ nav a.active {
   gap: 0.2rem;
   margin-top: -1.25rem;
   margin-bottom: 2.25rem;
+  padding: 0 2rem;
 }
 
 .recipe-title {
   color: var(--green);
   font-weight: 700;
   font-size: 2em;
+  padding: 2rem 2rem 0 2rem;
 }
 
 .horizontal-line {
@@ -285,8 +287,9 @@ nav a.active {
 .popup-buttons {
   display: flex;
   justify-content: space-between;
-  margin-top: 1.5rem;
-  margin-right: 1.5rem;
+  margin: 1.5rem;
+  margin-right: 2.7rem;
+  margin-bottom: 1.6rem;
   font-size: 2em;
 }
 
