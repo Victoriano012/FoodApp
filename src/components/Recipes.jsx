@@ -2,6 +2,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { FiCheck, FiEdit3, FiTrash2 } from 'react-icons/fi';
 import { FaStar } from 'react-icons/fa';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 function Recipes() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -173,7 +175,17 @@ function Recipes() {
                   }}
                 />
               ) : (
-                <p dangerouslySetInnerHTML={{ __html: selectedRecipe.comment.replace(/\n/g, '<br />') }}></p>
+                <ReactMarkdown
+                  remarkPlugins={[remarkGfm]}
+                  components={{
+                    li: ({ node, ...props }) => <li style={{ marginBottom: '-0.5em' }} {...props} />,
+                    p: ({ node, ...props }) => <p style={{ marginBottom: '-0.5em' }} {...props} />,
+                    ul: ({ node, ...props }) => <ul style={{ marginBottom: '-0.8em', marginTop: '0.5em' }} {...props} />,
+                    hr: ({ node, ...props }) => <hr style={{ marginTop: '1.5em' }} {...props} />,
+                  }}
+                >
+                  {selectedRecipe.comment}
+                </ReactMarkdown>
               )}
             </div>
             <div className="popup-buttons">
