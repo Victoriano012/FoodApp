@@ -223,8 +223,14 @@ nav a.active {
   border-radius: 10px;
   width: 75%;
   height: 85%;
-  overflow-y: auto;
   position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.scrollable-content {
+  overflow-y: auto;
+  flex-grow: 1;
 }
 
 .popup h2 {
@@ -232,6 +238,7 @@ nav a.active {
 }
 
 .popup h3 {
+  margin-top: 0rem;
   margin-bottom: 0.5rem;
 }
 

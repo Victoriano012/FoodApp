@@ -120,14 +120,16 @@ function Recipes() {
             <button className="close-button" onClick={handleClosePopup}>X</button>
             <h2 className='recipe-title'>{selectedRecipe.name}</h2>
             <StarRating score={selectedRecipe.score} />
-            <h3>Ingredients:</h3>
-            <ul>
-              {selectedRecipe.ingredients.map(ing => (
-                <li key={ing.name}>{ing.quantity}{ing.unit} {ing.name}</li>
-              ))}
-            </ul>
-            <hr className="horizontal-line" />
-            <p>{selectedRecipe.comment}</p>
+            <div className="scrollable-content">
+              <h3>Ingredients:</h3>
+              <ul>
+                {selectedRecipe.ingredients.map(ing => (
+                  <li key={ing.name}>{ing.quantity}{ing.unit} {ing.name}</li>
+                ))}
+              </ul>
+              <hr className="horizontal-line" />
+              <p>{selectedRecipe.comment}</p>
+            </div>
           </div>
         </div>
       )}
