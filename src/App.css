@@ -322,4 +322,5 @@ nav a.active {
   padding: 0.2rem;
   margin: 0 0 0 -0.2rem;
   background-color: transparent;
+  overflow-y: hidden;
 }

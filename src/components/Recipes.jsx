@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { FiCheck, FiEdit3, FiTrash2 } from 'react-icons/fi';
 import { FaStar } from 'react-icons/fa';
 
@@ -8,6 +8,7 @@ function Recipes() {
   const [selectedRecipe, setSelectedRecipe] = useState(null);
   const [editMode, setEditMode] = useState(false);
   const [newRecipe, setNewRecipe] = useState('');
+  const commentTextAreaRef = useRef(null);
   const [recipes, setRecipes] = useState(() => {
     const storedRecipes = JSON.parse(localStorage.getItem('recipes'));
     if (storedRecipes) {
@@ -24,6 +25,13 @@ function Recipes() {
   useEffect(() => {
     localStorage.setItem('recipes', JSON.stringify(recipes));
   }, [recipes]);
+
+  useEffect(() => {
+    if (commentTextAreaRef.current) {
+      commentTextAreaRef.current.style.height = 'auto';
+      commentTextAreaRef.current.style.height = commentTextAreaRef.current.scrollHeight + 'px';
+    }
+  }, [selectedRecipe, editMode]);
 
   const handleAddRecipe = () => {
     if (newRecipe && !recipes.find(i => i.name.toLowerCase() === newRecipe.toLowerCase())) {
@@ -154,12 +162,18 @@ function Recipes() {
               <hr className="horizontal-line" />
               {editMode ? (
                 <textarea
+                  ref={commentTextAreaRef}
                   value={selectedRecipe.comment}
                   onChange={handleCommentChange}
                   className="comment-textarea"
+                  rows={1}
+                  onInput={(e) => {
+                    e.target.style.height = 'auto';
+                    e.target.style.height = e.target.scrollHeight + 'px';
+                  }}
                 />
               ) : (
-                <p>{selectedRecipe.comment}</p>
+                <p dangerouslySetInnerHTML={{ __html: selectedRecipe.comment.replace(/\n/g, '<br />') }}></p>
               )}
             </div>
             <div className="popup-buttons">
