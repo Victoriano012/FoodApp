@@ -133,7 +133,7 @@ function Recipes() {
             <div className="popup-buttons">
               <FiTrash2
                 className="delete-icon"
-                onClick={(e) => handleDeleteRecipe(e, selectedRecipe.name)}
+                onClick={(e) => { handleDeleteRecipe(e, selectedRecipe.name); handleClosePopup(); }}
               />
               <FiEdit3 className="edit-icon" />
             </div>
