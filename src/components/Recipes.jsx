@@ -205,7 +205,7 @@ function Recipes() {
                         <option value=""> </option>
                         <option value="g">g</option>
                       </select>
-                      <div style={{ position: 'relative', flexGrow: 1 }}>
+                      <div style={{ position: 'relative' }}>
                         <input
                           type="text"
                           value={ing.name}

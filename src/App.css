@@ -345,27 +345,26 @@ nav a.active {
 
 .ingredient-quantity-input-styled {
   width: 28px;
-  margin-right: 0.5em;
   font-family: inherit;
   font-size: inherit;
 }
 
 .ingredient-unit-input-styled {
   width: 30px;
-  margin-right: 0.5em;
   font-family: inherit;
   font-size: inherit;
 }
 
 .ingredient-name-input-styled {
   flex-grow: 1;
-  min-width: 50px; /* Added min-width */
+  flex-shrink: 1;
+  max-width: 160px; /* Adjust as needed */
   font-family: inherit;
   font-size: inherit;
 }
 
 .ingredient-trash-icon-styled {
-  margin-left: 0.5em;
+  margin-left: 0.2em;
   font-size: 1.3rem;
 }
 
@@ -377,7 +376,8 @@ nav a.active {
   border: none;
   cursor: pointer;
   border-radius: 20px;
-  margin-top: 1em;
+  margin-top: 0em;
+  margin-bottom: -0.5em;
   align-self: flex-start; /* Align to the start of the flex container */
 }
 
