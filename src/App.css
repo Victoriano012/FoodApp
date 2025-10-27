@@ -3,6 +3,7 @@
   --orange: #FF8C00; 
   --dark-orange: #E67E22; 
   --lightgray: #999;
+  --verylightgray: #f6f6f6;
 }
 
 body {
@@ -129,9 +130,9 @@ li {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: #f0f0f0; /* Light gray */
+  background-color: var(--verylightgray);
   border-radius: 10px;
-  padding: 1rem;
+  padding: 0.9rem 1rem;
   margin-bottom: 0.5rem;
   border-bottom: none;
 }
