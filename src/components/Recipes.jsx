@@ -5,6 +5,7 @@ import { FiTrash2 } from 'react-icons/fi';
 function Recipes() {
   const [searchTerm, setSearchTerm] = useState('');
   const [newRecipe, setNewRecipe] = useState('');
+  const [selectedRecipe, setSelectedRecipe] = useState(null);
   const [recipes, setRecipes] = useState(() => {
     const storedRecipes = JSON.parse(localStorage.getItem('recipes'));
     if (storedRecipes) {
@@ -18,7 +19,7 @@ function Recipes() {
         { name: 'Sandwich', score: 2, ingredients: [{ name: 'Bread', quantity: 2, unit: '' }], comment: 'Simple and quick' }
       ];
     }
-  }, []);
+  });
 
   useEffect(() => {
     localStorage.setItem('recipes', JSON.stringify(recipes));
@@ -38,9 +39,18 @@ function Recipes() {
     }
   };
 
-  const handleDeleteRecipe = (recipeName) => {
+  const handleDeleteRecipe = (e, recipeName) => {
+    e.stopPropagation();
     const updatedRecipes = recipes.filter(recipe => recipe.name !== recipeName);
     setRecipes(updatedRecipes);
+  };
+
+  const handleRecipeClick = (recipe) => {
+    setSelectedRecipe(recipe);
+  };
+
+  const handleClosePopup = () => {
+    setSelectedRecipe(null);
   };
 
   const filteredRecipes = recipes
@@ -79,12 +89,12 @@ function Recipes() {
               <li className="info-message">No recipes match your search.</li>
             )}
             {filteredRecipes.map(recipe => (
-              <li key={recipe.name}>
+              <li key={recipe.name} onClick={() => handleRecipeClick(recipe)} className="recipe-item">
                 <span>{recipe.name}</span>
                 <div>
                   <FiTrash2
                     className="delete-icon"
-                    onClick={() => handleDeleteRecipe(recipe.name)}
+                    onClick={(e) => handleDeleteRecipe(e, recipe.name)}
                   />
                 </div>
               </li>
@@ -92,6 +102,24 @@ function Recipes() {
           </ul>
         </div>
       </div>
+
+      {selectedRecipe && (
+        <div className="popup-overlay" onClick={handleClosePopup}>
+          <div className="popup" onClick={(e) => e.stopPropagation()}>
+            <button className="close-button" onClick={handleClosePopup}>X</button>
+            <h2>{selectedRecipe.name}</h2>
+            <p>Score: {selectedRecipe.score}/5</p>
+            <h3>Ingredients:</h3>
+            <ul>
+              {selectedRecipe.ingredients.map(ing => (
+                <li key={ing.name}>{ing.name} - {ing.quantity}{ing.unit}</li>
+              ))}
+            </ul>
+            <h3>Comment:</h3>
+            <p>{selectedRecipe.comment}</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
