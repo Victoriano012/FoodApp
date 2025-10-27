@@ -91,6 +91,26 @@ function Recipes() {
     handleSave(updatedRecipe);
   };
 
+  const handleIngredientChange = (index, field, value) => {
+    const updatedIngredients = selectedRecipe.ingredients.map((ing, i) =>
+      i === index ? { ...ing, [field]: value } : ing
+    );
+    const updatedRecipe = { ...selectedRecipe, ingredients: updatedIngredients };
+    handleSave(updatedRecipe);
+  };
+
+  const handleAddIngredient = () => {
+    const updatedIngredients = [...selectedRecipe.ingredients, { name: '', quantity: '', unit: '' }];
+    const updatedRecipe = { ...selectedRecipe, ingredients: updatedIngredients };
+    handleSave(updatedRecipe);
+  };
+
+  const handleDeleteIngredient = (index) => {
+    const updatedIngredients = selectedRecipe.ingredients.filter((_, i) => i !== index);
+    const updatedRecipe = { ...selectedRecipe, ingredients: updatedIngredients };
+    handleSave(updatedRecipe);
+  };
+
   const StarRating = ({ score }) => {
     const stars = [];
     for (let i = 1; i <= 5; i++) {
@@ -156,11 +176,48 @@ function Recipes() {
             <StarRating score={selectedRecipe.score} />
             <div className="scrollable-content">
               <h3>Ingredients:</h3>
-              <ul>
-                {selectedRecipe.ingredients.map(ing => (
-                  <li key={ing.name}>{ing.quantity}{ing.unit} {ing.name}</li>
-                ))}
-              </ul>
+              {editMode ? (
+                <>
+                  {selectedRecipe.ingredients.map((ing, index) => (
+                    <div key={index} className="ingredient-edit-row" style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' }}>
+                      <input
+                        type="number"
+                        value={ing.quantity}
+                        onChange={(e) => handleIngredientChange(index, 'quantity', e.target.value)}
+                        className="ingredient-quantity-input"
+                        style={{ width: '27px', fontSize: '1rem', marginRight: '0.3em' }} // Inline style for immediate visual change
+                      />
+                      <select
+                        value={ing.unit}
+                        onChange={(e) => handleIngredientChange(index, 'unit', e.target.value)}
+                        className="ingredient-unit-input"
+                        style={{ width: '30px', fontSize: '1rem', marginRight: '0.2em' }} // Inline style for immediate visual change
+                      >
+                        <option value=""></option>
+                        <option value="g">g</option>
+                      </select>
+                      <input
+                        type="text"
+                        value={ing.name}
+                        onChange={(e) => handleIngredientChange(index, 'name', e.target.value)}
+                        className="ingredient-name-input"
+                        style={{ fontSize: '1rem', flexGrow: 1, marginRight: '0.3em' }} // flexGrow to take remaining space
+                      />
+                      <FiTrash2
+                        className="delete-icon"
+                        onClick={() => handleDeleteIngredient(index)}
+                      />
+                    </div>
+                  ))}
+                  <button onClick={handleAddIngredient}>Add Ingredient</button>
+                </>
+              ) : (
+                <ul>
+                  {selectedRecipe.ingredients.map(ing => (
+                    <li key={ing.name}>{ing.quantity}{ing.unit} {ing.name}</li>
+                  ))}
+                </ul>
+              )}
               <hr className="horizontal-line" />
               {editMode ? (
                 <textarea
