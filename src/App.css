@@ -166,12 +166,6 @@ nav a.active {
   font-weight: bold;
 }
 
-.delete-icon {
-  color: red;
-  cursor: pointer;
-  margin-left: 1rem;
-}
-
 .ingredients-container li div {
   display: flex;
   align-items: center;
@@ -304,6 +298,17 @@ nav a.active {
   font-size: 2em;
 }
 
+.delete-icon {
+  color: red;
+  cursor: pointer;
+  margin-left: 1rem;
+}
+
 .edit-icon {
+  cursor: pointer;
+}
+
+.check-icon {
+  color: var(--green);
   cursor: pointer;
 }

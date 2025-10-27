@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { FiEdit3, FiTrash, FiTrash2 } from 'react-icons/fi';
+import { FiCheck, FiEdit3, FiTrash, FiTrash2 } from 'react-icons/fi';
 import { FaStar, FaRegStar } from 'react-icons/fa';
 
 const StarRating = ({ score }) => {
@@ -18,6 +18,7 @@ const StarRating = ({ score }) => {
 function Recipes() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedRecipe, setSelectedRecipe] = useState(null);
+  const [editMode, setEditMode] = useState(false);
   const [newRecipe, setNewRecipe] = useState('');
   const [recipes, setRecipes] = useState(() => {
     const storedRecipes = JSON.parse(localStorage.getItem('recipes'));
@@ -56,12 +57,23 @@ function Recipes() {
     setRecipes(updatedRecipes);
   };
 
+  const handleEdit = (e) => {
+    e.stopPropagation();
+    setEditMode(true);
+  };
+
+  const handleNotEdit = (e) => {
+    e.stopPropagation();
+    setEditMode(false);
+  };
+
   const handleRecipeClick = (recipe) => {
     setSelectedRecipe(recipe);
   };
 
   const handleClosePopup = () => {
     setSelectedRecipe(null);
+    setEditMode(false);
   };
 
   const filteredRecipes = recipes
@@ -135,7 +147,16 @@ function Recipes() {
                 className="delete-icon"
                 onClick={(e) => { handleDeleteRecipe(e, selectedRecipe.name); handleClosePopup(); }}
               />
-              <FiEdit3 className="edit-icon" />
+              {!editMode && (<FiEdit3
+                className="edit-icon"
+                onClick={(e) => { handleEdit(e); }}
+                />
+              )}
+              {editMode && (<FiCheck
+                className="edit-icon"
+                onClick={(e) => { handleNotEdit(e); }}
+                />
+              )}
             </div>
           </div>
         </div>
