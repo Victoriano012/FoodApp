@@ -3,26 +3,24 @@ import React, { useState, useEffect } from 'react';
 import { FiTrash2 } from 'react-icons/fi';
 
 function Ingredients() {
-  const [ingredients, setIngredients] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [newIngredient, setNewIngredient] = useState('');
   const [unitFilter, setUnitFilter] = useState('-');
-
-  useEffect(() => {
+  const [ingredients, setIngredients] = useState(() => {
     const storedIngredients = JSON.parse(localStorage.getItem('ingredients'));
     if (storedIngredients) {
-      setIngredients(storedIngredients);
+      return storedIngredients;
     } else {
       // Dummy data for first time users
-      setIngredients([
+      return [
         { name: 'Apples', unit: '' },
         { name: 'Bananas', unit: '' },
         { name: 'Carrots', unit: 'g' },
         { name: 'Milk', unit: 'g' },
         { name: 'Bread', unit: '' },
-      ]);
+      ];
     }
-  }, []);
+  });
 
   useEffect(() => {
     localStorage.setItem('ingredients', JSON.stringify(ingredients));
