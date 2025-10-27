@@ -10,11 +10,12 @@ function Recipes() {
   const [selectedRecipe, setSelectedRecipe] = useState(null);
   const [editMode, setEditMode] = useState(false);
   const [newRecipe, setNewRecipe] = useState('');
-  const [allIngredientNames, setAllIngredientNames] = useState([]);
+  const [allIngredients, setAllIngredients] = useState([]);
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [activeIngredientIndex, setActiveIngredientIndex] = useState(null);
   const commentTextAreaRef = useRef(null);
+  const ingredientInputRefs = useRef([]);
   const [recipes, setRecipes] = useState(() => {
     const storedRecipes = JSON.parse(localStorage.getItem('recipes'));
     if (storedRecipes) {
@@ -30,9 +31,14 @@ function Recipes() {
 
   useEffect(() => {
     localStorage.setItem('recipes', JSON.stringify(recipes));
-    const uniqueIngredientNames = Array.from(new Set(recipes.flatMap(recipe => recipe.ingredients.map(ing => ing.name))));
-    setAllIngredientNames(uniqueIngredientNames);
   }, [recipes]);
+
+  useEffect(() => {
+    const storedIngredients = JSON.parse(localStorage.getItem('ingredients'));
+    if (storedIngredients) {
+      setAllIngredients(storedIngredients);
+    }
+  }, []);
 
   useEffect(() => {
     if (commentTextAreaRef.current) {
@@ -85,6 +91,7 @@ function Recipes() {
   };
 
   const handleSave = (updatedRecipe) => {
+    console.log('handleSave called with updatedRecipe:', JSON.stringify(updatedRecipe.ingredients));
     setSelectedRecipe(updatedRecipe);
     const updatedRecipes = recipes.map(recipe =>
       recipe.name === updatedRecipe.name ? updatedRecipe : recipe
@@ -102,9 +109,10 @@ function Recipes() {
     handleSave(updatedRecipe);
   };
 
-  const handleIngredientChange = (index, field, value) => {
+  const handleIngredientChange = (index, updates) => {
+    console.log('handleIngredientChange called:', { index, updates });
     const updatedIngredients = selectedRecipe.ingredients.map((ing, i) =>
-      i === index ? { ...ing, [field]: value } : ing
+      i === index ? { ...ing, ...updates } : ing
     );
     const updatedRecipe = { ...selectedRecipe, ingredients: updatedIngredients };
     handleSave(updatedRecipe);
@@ -194,12 +202,12 @@ function Recipes() {
                       <input
                         type="number"
                         value={ing.quantity}
-                        onChange={(e) => handleIngredientChange(index, 'quantity', e.target.value)}
+                        onChange={(e) => handleIngredientChange(index, { quantity: e.target.value })}
                         className="ingredient-quantity-input ingredient-quantity-input-styled"
                       />
                       <select
                         value={ing.unit}
-                        onChange={(e) => handleIngredientChange(index, 'unit', e.target.value)}
+                        onChange={(e) => handleIngredientChange(index, { unit: e.target.value })}
                         className="ingredient-unit-input ingredient-unit-input-styled"
                       >
                         <option value=""> </option>
@@ -210,15 +218,16 @@ function Recipes() {
                           type="text"
                           value={ing.name}
                           onChange={(e) => {
-                            handleIngredientChange(index, 'name', e.target.value);
+                            console.log('Input onChange:', e.target.value);
+                            handleIngredientChange(index, { name: e.target.value });
                             if (e.target.value === '') {
                               setSuggestions([]);
                               setShowSuggestions(false);
                             } else {
                               const currentIngredientNames = new Set(selectedRecipe.ingredients.map(item => item.name.toLowerCase()));
-                              const filtered = allIngredientNames.filter(name =>
-                                name.toLowerCase().startsWith(e.target.value.toLowerCase()) &&
-                                !currentIngredientNames.has(name.toLowerCase())
+                              const filtered = allIngredients.filter(ingredient =>
+                                ingredient.name.toLowerCase().startsWith(e.target.value.toLowerCase()) &&
+                                !currentIngredientNames.has(ingredient.name.toLowerCase())
                               );
                               setSuggestions(filtered);
                               setShowSuggestions(true);
@@ -227,18 +236,15 @@ function Recipes() {
                           onFocus={() => {
                             setActiveIngredientIndex(index);
                             const currentIngredientNames = new Set(selectedRecipe.ingredients.map(item => item.name.toLowerCase()));
-                            const filtered = allIngredientNames.filter(name =>
-                              name.toLowerCase().startsWith(ing.name.toLowerCase()) &&
-                              !currentIngredientNames.has(name.toLowerCase())
+                            const filtered = allIngredients.filter(ingredient =>
+                              ingredient.name.toLowerCase().startsWith(ing.name.toLowerCase()) &&
+                              !currentIngredientNames.has(ingredient.name.toLowerCase())
                             );
                             setSuggestions(filtered);
                             setShowSuggestions(true);
                           }}
-                          onBlur={() => setTimeout(() => {
-                            setShowSuggestions(false);
-                            setActiveIngredientIndex(null);
-                          }, 100)}
                           className="ingredient-name-input ingredient-name-input-styled"
+                          ref={el => ingredientInputRefs.current[index] = el}
                         />
                         {showSuggestions && activeIngredientIndex === index && suggestions.length > 0 && (
                           <div className="suggestions-dropdown">
@@ -247,12 +253,13 @@ function Recipes() {
                                 key={sIndex}
                                 className="suggestion-item"
                                 onClick={() => {
-                                  handleIngredientChange(index, 'name', suggestion);
+                                  console.log('Suggestion clicked:', suggestion.name, suggestion.unit);
+                                  handleIngredientChange(index, { name: suggestion.name, unit: suggestion.unit });
                                   setShowSuggestions(false);
                                   setActiveIngredientIndex(null);
                                 }}
                               >
-                                {suggestion}
+                                {suggestion.name}
                               </div>
                             ))}
                           </div>
