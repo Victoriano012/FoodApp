@@ -3,42 +3,51 @@ import React, { useState, useEffect } from 'react';
 import { FiTrash2 } from 'react-icons/fi';
 
 function Recipes() {
-  const [recipes, setRecipes] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [newRecipe, setNewRecipe] = useState('');
-
-  useEffect(() => {
+  const [recipes, setRecipes] = useState(() => {
     const storedRecipes = JSON.parse(localStorage.getItem('recipes'));
     if (storedRecipes) {
-      setRecipes(storedRecipes);
+      return storedRecipes;
     } else {
-      setRecipes(['Apple Pie', 'Banana Bread', 'Carrot Soup', 'Milkshake', 'Sandwich']);
-      localStorage.setItem('recipes', JSON.stringify(['Apple Pie', 'Banana Bread', 'Carrot Soup', 'Milkshake', 'Sandwich']));
+      return [
+        { name: 'Apple Pie', score: 5, ingredients: [{ name: 'Apples', quantity: 3, unit: '' }], comment: 'Classic dessert' },
+        { name: 'Banana Bread', score: 4, ingredients: [{ name: 'Bananas', quantity: 2, unit: '' }], comment: 'Easy to make' },
+        { name: 'Carrot Soup', score: 3, ingredients: [{ name: 'Carrots', quantity: 500, unit: 'g' }], comment: 'Healthy and delicious' },
+        { name: 'Milkshake', score: 5, ingredients: [{ name: 'Milk', quantity: 250, unit: 'g' }], comment: 'A tasty classic' },
+        { name: 'Sandwich', score: 2, ingredients: [{ name: 'Bread', quantity: 2, unit: '' }], comment: 'Simple and quick' }
+      ];
     }
   }, []);
 
+  useEffect(() => {
+    localStorage.setItem('recipes', JSON.stringify(recipes));
+  }, [recipes]);
+
   const handleAddRecipe = () => {
-    if (newRecipe && !recipes.find(i => i.toLowerCase() === newRecipe.toLowerCase())) {
-      const capitalizedRecipe = newRecipe.charAt(0).toUpperCase() + newRecipe.slice(1);
-      const newRecipes = [...recipes, capitalizedRecipe];
-      setRecipes(newRecipes);
-      localStorage.setItem('recipes', JSON.stringify(newRecipes));
+    if (newRecipe && !recipes.find(i => i.name.toLowerCase() === newRecipe.toLowerCase())) {
+      const capitalizedRecipe = {
+        name: newRecipe.charAt(0).toUpperCase() + newRecipe.slice(1),
+        score: 0,
+        ingredients: [],
+        comment: ''
+      };
+      setRecipes([...recipes, capitalizedRecipe]);
       setNewRecipe('');
       setSearchTerm('');
     }
   };
 
   const handleDeleteRecipe = (recipeName) => {
-    const updatedRecipes = recipes.filter(recipe => recipe !== recipeName);
+    const updatedRecipes = recipes.filter(recipe => recipe.name !== recipeName);
     setRecipes(updatedRecipes);
-    localStorage.setItem('recipes', JSON.stringify(updatedRecipes));
   };
 
   const filteredRecipes = recipes
     .filter(recipe =>
-      recipe.toLowerCase().startsWith(searchTerm.toLowerCase())
+      recipe.name.toLowerCase().startsWith(searchTerm.toLowerCase())
     )
-    .sort((a, b) => a.localeCompare(b));
+    .sort((a, b) => a.name.localeCompare(b.name));
 
   return (
     <div className="ingredients-page">
@@ -70,12 +79,12 @@ function Recipes() {
               <li className="info-message">No recipes match your search.</li>
             )}
             {filteredRecipes.map(recipe => (
-              <li key={recipe}>
-                <span>{recipe}</span>
+              <li key={recipe.name}>
+                <span>{recipe.name}</span>
                 <div>
                   <FiTrash2
                     className="delete-icon"
-                    onClick={() => handleDeleteRecipe(recipe)}
+                    onClick={() => handleDeleteRecipe(recipe.name)}
                   />
                 </div>
               </li>
