@@ -17,6 +17,7 @@ const StarRating = ({ score }) => {
 
 function Recipes() {
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedRecipe, setSelectedRecipe] = useState(null);
   const [newRecipe, setNewRecipe] = useState('');
   const [recipes, setRecipes] = useState(() => {
     const storedRecipes = JSON.parse(localStorage.getItem('recipes'));
@@ -30,7 +31,6 @@ function Recipes() {
       ];
     }
   });
-  const [selectedRecipe, setSelectedRecipe] = useState(null);
 
   useEffect(() => {
     localStorage.setItem('recipes', JSON.stringify(recipes));
