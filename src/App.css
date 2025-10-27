@@ -368,3 +368,15 @@ nav a.active {
   margin-left: 0.5em;
   font-size: 1.3rem;
 }
+
+.add-ingredient-button-styled {
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  background-color: var(--orange);
+  color: white;
+  border: none;
+  cursor: pointer;
+  border-radius: 20px;
+  margin-bottom: -0.5em;
+  align-self: flex-start; /* Align to the start of the flex container */
+}

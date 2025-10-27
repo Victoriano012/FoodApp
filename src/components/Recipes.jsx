@@ -69,6 +69,16 @@ function Recipes() {
   };
 
   const handleClosePopup = () => {
+    if (editMode && selectedRecipe) {
+      let finalRecipe = { ...selectedRecipe };
+      if (finalRecipe.ingredients.length > 0) {
+        const lastIngredient = finalRecipe.ingredients[finalRecipe.ingredients.length - 1];
+        if (lastIngredient.name === '' && lastIngredient.quantity === '') {
+          finalRecipe.ingredients = finalRecipe.ingredients.slice(0, -1);
+        }
+      }
+      handleSave(finalRecipe);
+    }
     setSelectedRecipe(null);
     setEditMode(false);
   };
@@ -191,7 +201,7 @@ function Recipes() {
                         onChange={(e) => handleIngredientChange(index, 'unit', e.target.value)}
                         className="ingredient-unit-input ingredient-unit-input-styled"
                       >
-                        <option value=" "> </option>
+                        <option value=""> </option>
                         <option value="g">g</option>
                       </select>
                       <input
@@ -200,13 +210,16 @@ function Recipes() {
                         onChange={(e) => handleIngredientChange(index, 'name', e.target.value)}
                         className="ingredient-name-input ingredient-name-input-styled"
                       />
-                      <FiTrash
+                      <FiTrash2
                         className="delete-icon ingredient-trash-icon-styled"
                         onClick={() => handleDeleteIngredient(index)}
                       />
                     </div>
                   ))}
-                  <button onClick={handleAddIngredient}>Add Ingredient</button>
+                  {(!selectedRecipe.ingredients.length || 
+                    (selectedRecipe.ingredients[selectedRecipe.ingredients.length - 1].name !== '')) && (
+                    <button onClick={handleAddIngredient} className="add-ingredient-button-styled">New Ingredient</button>
+                  )}
                 </>
               ) : (
                 <ul>
@@ -235,7 +248,8 @@ function Recipes() {
                     li: ({ node, ...props }) => <li style={{ marginBottom: '-0.5em' }} {...props} />,
                     p: ({ node, ...props }) => <p style={{ marginBottom: '-0.5em' }} {...props} />,
                     ul: ({ node, ...props }) => <ul style={{ marginBottom: '-0.8em', marginTop: '0.5em' }} {...props} />,
-                    hr: ({ node, ...props }) => <hr style={{ marginTop: '1.5em' }} {...props} />,
+                    hr: ({ node, ...props }) => <hr style={{ marginTop: '1.5em', marginBottom: '-0.5em' }} {...props} />,
+                    h3: ({ node, ...props }) => <h3 style={{ marginTop: '1em', marginBottom: '-0.5em' }} {...props} />,
                   }}
                 >
                   {selectedRecipe.comment}
@@ -248,7 +262,17 @@ function Recipes() {
                 onClick={(e) => { handleDeleteRecipe(e, selectedRecipe.name); handleClosePopup(); }}
               />
               {editMode ? (
-                <FiCheck className="edit-icon" style={{ color: 'green' }} onClick={() => { handleSave(selectedRecipe); setEditMode(false); }} />
+                <FiCheck className="edit-icon" style={{ color: 'green' }} onClick={() => {
+                  let finalRecipe = { ...selectedRecipe };
+                  if (finalRecipe.ingredients.length > 0) {
+                    const lastIngredient = finalRecipe.ingredients[finalRecipe.ingredients.length - 1];
+                    if (lastIngredient.name === '') {
+                      finalRecipe.ingredients = finalRecipe.ingredients.slice(0, -1);
+                    }
+                  }
+                  handleSave(finalRecipe);
+                  setEditMode(false);
+                }} />
               ) : (
                 <FiEdit3 className="edit-icon" onClick={() => setEditMode(true)} />
               )}
