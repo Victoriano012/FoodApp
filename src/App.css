@@ -1,7 +1,7 @@
 :root {
   --green: green; 
   --orange: #FF8C00; 
-  --dark-orange: #E67E22; 
+  --darkorange: #E67E22; 
   --lightgray: #999;
   --verylightgray: #f6f6f6;
 }
@@ -67,7 +67,7 @@ nav ul li a {
 }
 
 nav ul li:has(a.active) {
-  background-color: var(--dark-orange);
+  background-color: var(--darkorange);
 }
 
 .tab-header {
@@ -238,13 +238,23 @@ nav a.active {
   padding: 0 2rem 2rem 2rem;
 }
 
+.popup h1 {
+  color: var(--green);
+}
+
 .popup h2 {
   margin-top: 0;
+  color: var(--green);
 }
 
 .popup h3 {
   margin-top: 0rem;
   margin-bottom: 0.5rem;
+  color: var(--green);
+}
+
+.popup h4 {
+  color: var(--green);
 }
 
 .popup ul {
