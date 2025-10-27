@@ -78,7 +78,7 @@ function Recipes() {
           <div className="add-ingredient-bar">
             <input
               type="text"
-              placeholder="Add or search ingredients"
+              placeholder="Add or search recipes"
               value={newRecipe}
               onChange={(e) => {
                 setNewRecipe(e.target.value);
