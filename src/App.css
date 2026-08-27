@@ -364,11 +364,34 @@ li.info-message {
   transform: scale(0.985);
 }
 
+/* Grip for drag-to-reorder rows. touch-action: none is what actually stops
+   the browser from scrolling instead of dragging on touch screens. */
+.drag-handle {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  color: #c5c2bc;
+  font-size: 1.2rem;
+  padding: 0.25rem 0.4rem 0.25rem 0;
+  margin-left: -0.25rem;
+  touch-action: none;
+  cursor: grab;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* The row currently being dragged */
+.drag-row {
+  position: relative;
+  z-index: 5;
+  background-color: white;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.14);
+}
 .shopping-item-label {
   display: flex;
   align-items: center;
   gap: 0.75rem;
   min-width: 0;
+  flex: 1;
 }
 
 .shopping-checkbox {
@@ -501,6 +524,27 @@ li.info-message {
   font-size: 1.15rem;
 }
 
+/* Stars + portions count on one line under the recipe title */
+.star-portions-row {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  margin-top: -1rem;
+  margin-bottom: 1.75rem;
+  padding: 0 1.25rem;
+}
+
+.star-portions-row .star-rating {
+  margin: 0;
+  padding: 0;
+}
+
+.star-portions-row .recipe-portions-inline {
+  margin-left: 0;
+  font-size: 0.85rem;
+  vertical-align: baseline;
+}
+
 .star-rating.editable svg {
   cursor: pointer;
 }
@@ -554,6 +598,20 @@ li.info-message {
   cursor: pointer;
   margin-left: 1rem;
   -webkit-tap-highlight-color: transparent;
+}
+
+/* Per-ingredient toggle: does this ingredient go on the shopping list when a
+   recipe that uses it is added? */
+.cart-toggle {
+  color: var(--orange);
+  cursor: pointer;
+  font-size: 1.15rem;
+  margin-right: 0.9rem;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.cart-toggle.off {
+  color: #ccc9c3;
 }
 
 .edit-icon {

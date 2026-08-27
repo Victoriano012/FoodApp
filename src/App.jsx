@@ -74,6 +74,8 @@ function AppShell() {
     if (settling.current || e.touches.length !== 1) return;
     // Never hijack gestures inside a popup or the lightbox
     if (document.querySelector('.popup-overlay, .lightbox-overlay')) return;
+    // Nor drags starting on a reorder grip
+    if (e.target.closest && e.target.closest('.drag-handle')) return;
     // Nor gestures starting inside a horizontally scrollable element
     let el = e.target;
     while (el && el !== e.currentTarget) {

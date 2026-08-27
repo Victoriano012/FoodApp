@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { FiTrash2 } from 'react-icons/fi';
+import { FiTrash2, FiShoppingCart } from 'react-icons/fi';
 
 function Ingredients() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -47,6 +47,16 @@ function Ingredients() {
       ingredient.name === ingredientName ? { ...ingredient, unit: newUnit } : ingredient
     );
     setIngredients(updatedIngredients);
+  };
+
+  // autoAdd === false means the ingredient is skipped when a recipe is added
+  // to the shopping list (salt, pepper...); undefined counts as true
+  const handleToggleAutoAdd = (ingredientName) => {
+    setIngredients(ingredients.map(ingredient =>
+      ingredient.name === ingredientName
+        ? { ...ingredient, autoAdd: ingredient.autoAdd === false }
+        : ingredient
+    ));
   };
 
   const filteredIngredients = ingredients
@@ -101,6 +111,13 @@ function Ingredients() {
               <li key={ingredient.name}>
                 <span>{ingredient.name}</span>
                 <div>
+                  <FiShoppingCart
+                    className={`cart-toggle${ingredient.autoAdd === false ? ' off' : ''}`}
+                    title={ingredient.autoAdd === false
+                      ? 'Not added to the shopping list with recipes'
+                      : 'Added to the shopping list with recipes'}
+                    onClick={() => handleToggleAutoAdd(ingredient.name)}
+                  />
                   <select
                     value={ingredient.unit}
                     onChange={(e) => handleUnitChange(ingredient.name, e.target.value)}

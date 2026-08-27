@@ -1,6 +1,8 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { FiCamera, FiCheck, FiEdit3, FiImage, FiShoppingCart, FiTrash2, FiX } from 'react-icons/fi';
+import { MdDragIndicator } from 'react-icons/md';
+import useDragReorder, { moveItem } from '../useDragReorder';
 import { FaStar } from 'react-icons/fa';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -398,6 +400,18 @@ function Recipes() {
     handleSave(updatedRecipe);
   };
 
+  const ingredientCount = selectedRecipe ? selectedRecipe.ingredients.length : 0;
+  const { rowRef, handleProps, dragFrom } = useDragReorder(ingredientCount, (from, to) => {
+    handleSave({ ...selectedRecipe, ingredients: moveItem(selectedRecipe.ingredients, from, to) });
+  });
+
+  // The Ingredients tab is the source of truth for units — a recipe's stored
+  // unit is only a fallback for ingredients that were deleted from there
+  const unitFor = (name, fallback = '') => {
+    const known = allIngredients.find(i => i.name.toLowerCase() === name.toLowerCase());
+    return known ? known.unit : fallback;
+  };
+
   const StarRating = ({ score }) => {
     const stars = [];
     for (let i = 1; i <= 5; i++) {
@@ -502,17 +516,17 @@ function Recipes() {
                   autoFocus={selectedRecipe.name === ''}
                 />
               ) : (
-                <>
-                  {selectedRecipe.name}
-                  {(selectedRecipe.portions ?? 1) > 0 && (
-                    <span className="recipe-portions-inline">
-                      {selectedRecipe.portions ?? 1} portion{(selectedRecipe.portions ?? 1) > 1 ? 's' : ''}
-                    </span>
-                  )}
-                </>
+                selectedRecipe.name
               )}
             </h2>
-            <StarRating score={selectedRecipe.score} />
+            <div className="star-portions-row">
+              <StarRating score={selectedRecipe.score} />
+              {!editMode && (selectedRecipe.portions ?? 1) > 0 && (
+                <span className="recipe-portions-inline">
+                  {selectedRecipe.portions ?? 1} portion{(selectedRecipe.portions ?? 1) > 1 ? 's' : ''}
+                </span>
+              )}
+            </div>
             {editMode && (
               <div className="portions-row">
                 <span>Portions:</span>
@@ -528,7 +542,14 @@ function Recipes() {
               {editMode ? (
                 <>
                   {selectedRecipe.ingredients.map((ing, index) => (
-                    <div key={index} className="ingredient-edit-row ingredient-edit-row-styled">
+                    <div
+                      key={index}
+                      ref={rowRef(index)}
+                      className={`ingredient-edit-row ingredient-edit-row-styled${dragFrom === index ? ' drag-row' : ''}`}
+                    >
+                      <span {...handleProps(index)}>
+                        <MdDragIndicator />
+                      </span>
                       <input
                         type="number"
                         value={ing.quantity}
@@ -537,7 +558,7 @@ function Recipes() {
                       />
                       <input
                         type="text"
-                        value={ing.unit}
+                        value={unitFor(ing.name, ing.unit)}
                         className="ingredient-unit-input ingredient-unit-input-styled"
                         readOnly
                       />
@@ -612,7 +633,7 @@ function Recipes() {
               ) : (
                 <ul>
                   {selectedRecipe.ingredients.map(ing => (
-                    <li key={ing.name}>{ing.quantity}{ing.unit} {ing.name}</li>
+                    <li key={ing.name}>{ing.quantity}{unitFor(ing.name, ing.unit)} {ing.name}</li>
                   ))}
                 </ul>
               )}

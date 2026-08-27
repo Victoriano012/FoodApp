@@ -36,6 +36,10 @@ function applyIngredientsToList(list, baseIngredients, delta) {
   const updated = [...list];
   baseIngredients.forEach(ing => {
     if (!ing.name) return;
+    // Ingredients marked as not auto-added (salt, pepper...) never enter or
+    // leave the list through recipes
+    const known = knownIngredients.find(i => i.name.toLowerCase() === ing.name.toLowerCase());
+    if (known && known.autoAdd === false) return;
     const idx = updated.findIndex(i => i.name.toLowerCase() === ing.name.toLowerCase());
     const qtyDelta = (parseFloat(ing.quantity) || 0) * delta;
     if (idx === -1) {

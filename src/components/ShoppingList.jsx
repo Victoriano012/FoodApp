@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { FiTrash2, FiX } from 'react-icons/fi';
+import { MdDragIndicator } from 'react-icons/md';
+import useDragReorder, { moveItem } from '../useDragReorder';
 import { FaStar } from 'react-icons/fa';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -86,9 +88,11 @@ function ShoppingList() {
     });
   };
 
-  const sortedItems = [...items].sort((a, b) => {
-    if (a.checked !== b.checked) return a.checked ? 1 : -1;
-    return a.name.localeCompare(b.name);
+  // Manual order (drag to rearrange); checked items still sink to the bottom
+  const sortedItems = [...items.filter(i => !i.checked), ...items.filter(i => i.checked)];
+
+  const { rowRef, handleProps, dragFrom } = useDragReorder(sortedItems.length, (from, to) => {
+    setItems(moveItem(sortedItems, from, to));
   });
 
   return (
@@ -97,6 +101,17 @@ function ShoppingList() {
       <div className="content">
         <div className="ingredients-container">
           <div className="add-ingredient-bar">
+            <input
+              type="text"
+              placeholder="Add an item to buy"
+              value={newItem}
+              onChange={(e) => setNewItem(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  handleAddItem();
+                }
+              }}
+            />
             <input
               type="number"
               placeholder="Qty"
@@ -109,17 +124,6 @@ function ShoppingList() {
               }}
               className="shopping-qty-add-input"
             />
-            <input
-              type="text"
-              placeholder="Add an item to buy"
-              value={newItem}
-              onChange={(e) => setNewItem(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  handleAddItem();
-                }
-              }}
-            />
             <button onClick={handleAddItem}>Add</button>
           </div>
           <div className="ingredients-list">
@@ -127,14 +131,18 @@ function ShoppingList() {
               {items.length === 0 && (
                 <li className="info-message">Your shopping list is empty. Add items you need to buy, or add a recipe from the Recipes tab.</li>
               )}
-              {sortedItems.map(item => {
+              {sortedItems.map((item, idx) => {
                 const unit = unitFor(item.name, item.unit);
                 return (
                   <li
                     key={item.name}
-                    className={`shopping-item${item.checked ? ' checked' : ''}`}
+                    ref={rowRef(idx)}
+                    className={`shopping-item${item.checked ? ' checked' : ''}${dragFrom === idx ? ' drag-row' : ''}`}
                     onClick={() => handleToggleItem(item.name)}
                   >
+                    <span {...handleProps(idx)} onClick={(e) => e.stopPropagation()}>
+                      <MdDragIndicator />
+                    </span>
                     <span className="shopping-item-label">
                       <span className="shopping-checkbox" aria-hidden="true" />
                       <span>{item.name}</span>
@@ -216,6 +224,13 @@ function ShoppingList() {
               {viewedRecipe.multiplier > 1 && (
                 <span className="recipe-multiplier-badge">×{viewedRecipe.multiplier}</span>
               )}
+            </h2>
+            <div className="star-portions-row">
+              <div className="star-rating">
+                {[1, 2, 3, 4, 5].map(i => (
+                  <FaStar key={i} color={i <= viewedRecipe.score ? 'var(--orange)' : 'var(--star-empty)'} />
+                ))}
+              </div>
               {viewedRecipe.portions > 0 && (
                 <span className="recipe-portions-inline">
                   {viewedRecipe.portions} portion{viewedRecipe.portions > 1 ? 's' : ''}
@@ -223,11 +238,6 @@ function ShoppingList() {
                     ` · ${viewedRecipe.multiplier * viewedRecipe.portions} on the list`}
                 </span>
               )}
-            </h2>
-            <div className="star-rating">
-              {[1, 2, 3, 4, 5].map(i => (
-                <FaStar key={i} color={i <= viewedRecipe.score ? 'var(--orange)' : 'var(--star-empty)'} />
-              ))}
             </div>
             <div className="scrollable-content">
               <h3>Ingredients:</h3>
