@@ -36,30 +36,34 @@ h1 {
   height: 100dvh;
 }
 
-/* Wrapper around the routed page; lets tab swipes animate a slide-in */
-.page {
+/* Sliding track for tab swipes: the current page sits in flow, the
+   neighbours are absolutely positioned one screen to each side, and the
+   whole track is translated to follow the finger */
+.page-track {
   flex: 1;
   display: flex;
   flex-direction: column;
   min-height: 0;
+  position: relative;
+  touch-action: pan-y;
+  will-change: transform;
 }
 
-.page.slide-left {
-  animation: page-slide-left 0.18s ease-out;
+.page,
+.page-pane {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background-color: var(--bg);
 }
 
-.page.slide-right {
-  animation: page-slide-right 0.18s ease-out;
-}
-
-@keyframes page-slide-left {
-  from { transform: translateX(24px); opacity: 0.6; }
-  to { transform: translateX(0); opacity: 1; }
-}
-
-@keyframes page-slide-right {
-  from { transform: translateX(-24px); opacity: 0.6; }
-  to { transform: translateX(0); opacity: 1; }
+.page-pane {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 100%;
+  overflow: hidden;
 }
 
 .content {
