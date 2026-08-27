@@ -1,9 +1,17 @@
 :root {
-  --green: green; 
-  --orange: #FF8C00; 
-  --darkorange: #E67E22; 
+  --green: #2e7d32;
+  --green-dark: #1b5e20;
+  --orange: #f68b1f;
+  --darkorange: #d97706;
   --lightgray: #999;
   --verylightgray: #f6f6f6;
+  --star-empty: #d9d9d9;
+  --text: #2b2b2b;
+  --text-muted: #8a8a8a;
+  --bg: #fbfaf8;
+  --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  --nav-height: 46px;
+  --radius: 12px;
 }
 
 body {
@@ -13,6 +21,8 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background-color: var(--bg);
+  color: var(--text);
 }
 
 h1 {
@@ -23,19 +33,24 @@ h1 {
   display: flex;
   flex-direction: column;
   height: 100vh;
+  height: 100dvh;
 }
 
 .content {
   flex: 1;
-  padding: 1rem;
+  padding: 0.25rem;
 }
+
+/* ---------- Bottom navigation ---------- */
 
 nav {
   position: fixed;
   bottom: 0;
   width: 100%;
   background-color: var(--orange);
-  border-top: 1px solid #e7e7e7;
+  padding-bottom: env(safe-area-inset-bottom);
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.12);
+  z-index: 500;
 }
 
 nav ul {
@@ -52,34 +67,54 @@ nav ul li {
   text-align: center;
 }
 
-nav ul li:last-child {
-  border-right: none;
+nav ul li a {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.05rem;
+  height: var(--nav-height);
+  text-decoration: none;
+  color: rgba(255, 255, 255, 0.85);
+  white-space: nowrap;
+  font-size: 0.72rem;
+  letter-spacing: 0.02em;
+  transition: background-color 0.15s ease, color 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
 }
 
-nav ul li a {
-  display: block;
-  padding: 0.5rem 0rem;
-  text-decoration: none;
-  color: white;
-  white-space: nowrap;
-  font-size: 1.1em;
-  border-right: 1px solid var(--lightgray);
+.nav-icon {
+  font-size: 1.4rem;
 }
 
 nav ul li:has(a.active) {
   background-color: var(--darkorange);
 }
 
-.tab-header {
-  background-color: var(--green);
+nav a.active {
   color: white;
-  padding: 0.8rem 1rem;
-  text-align: left;
-  font-size: 2em;
+  font-weight: 600;
 }
 
+/* ---------- Page header ---------- */
+
+.tab-header {
+  background-color: var(--green);
+  background-image: linear-gradient(160deg, var(--green) 0%, var(--green-dark) 100%);
+  color: white;
+  padding: 0.7rem 1rem;
+  padding-top: calc(0.7rem + env(safe-area-inset-top));
+  text-align: left;
+  font-size: 1.7em;
+  font-family: 'Merriweather', Georgia, serif;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+/* ---------- Add / search bar ---------- */
+
 .ingredients-container {
-  margin: 2rem 1rem 0 1rem;
+  margin: 1rem 0.5rem 0 0.5rem;
 }
 
 .add-ingredient-bar {
@@ -90,37 +125,68 @@ nav ul li:has(a.active) {
 
 .add-ingredient-bar input {
   flex: 1;
-  padding: 0.5rem 1rem;
+  min-width: 0;
+  padding: 0.6rem 1rem;
   font-size: 1rem;
-  border: 1px solid #ccc;
-  border-radius: 20px;
+  font-family: inherit;
+  color: inherit;
+  border: 1px solid #ddd;
+  border-radius: 999px;
+  background-color: white;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.add-ingredient-bar input:focus {
+  border-color: var(--green);
+  box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.12);
+}
+
+.add-ingredient-bar input::placeholder {
+  color: var(--text-muted);
 }
 
 .add-ingredient-bar button {
-  padding: 0.5rem 1rem;
+  padding: 0.6rem 1.15rem;
   font-size: 1rem;
+  font-family: inherit;
+  font-weight: 600;
   background-color: var(--orange);
   color: white;
   border: none;
   cursor: pointer;
-  border-radius: 20px;
+  border-radius: 999px;
   margin-left: 0.5rem;
+  transition: background-color 0.15s ease, transform 0.1s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.add-ingredient-bar button:hover {
+  background-color: var(--darkorange);
+}
+
+.add-ingredient-bar button:active {
+  transform: scale(0.96);
 }
 
 .unit-filter {
-  padding: 0.5rem 0.2rem;
-  border-radius: 13px;
-  border: 1px solid #ccc;
+  padding: 0.55rem 0.3rem;
+  border-radius: 10px;
+  border: 1px solid #ddd;
   margin-left: 0.5rem;
   background-color: white;
+  font-family: inherit;
+  color: inherit;
 }
 
 .unit-selector {
-  font-size: 1.05rem;
-  padding: 0rem 0rem;
-  margin: -5rem 0.5rem;
-  border-radius: 30px;
+  font-size: 1rem;
+  padding: 0;
+  margin: 0 0.5rem;
+  border-radius: 8px;
 }
+
+/* ---------- Lists ---------- */
 
 ul {
   list-style: none;
@@ -137,33 +203,36 @@ li {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: var(--verylightgray);
-  border-radius: 10px;
+  background-color: white;
+  border-radius: var(--radius);
   padding: 0.9rem 1rem;
   margin-bottom: 0.5rem;
   border-bottom: none;
   min-height: 1.65rem;
   font-size: 1.05rem;
+  box-shadow: var(--card-shadow);
+  transition: transform 0.1s ease, box-shadow 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .ingredients-container li select {
   padding: 0.25rem;
-  border-radius: 5px;
-  border: 1px solid #ccc;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  background-color: white;
+  font-family: inherit;
+  color: inherit;
 }
 
 .info-message {
-  color: #888;
+  color: var(--text-muted);
   text-align: center;
   margin-top: 2rem;
+  line-height: 1.5;
 }
 
 li.info-message {
   border-bottom: none;
-}
-
-nav a.active {
-  font-weight: bold;
 }
 
 .ingredients-container li div {
@@ -174,7 +243,8 @@ nav a.active {
 .ingredients-page {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 58px);
+  height: calc(100vh - var(--nav-height));
+  height: calc(100dvh - var(--nav-height) - env(safe-area-inset-bottom));
 }
 
 .ingredients-page .content {
@@ -193,7 +263,7 @@ nav a.active {
 }
 
 .ingredients-page .add-ingredient-bar {
-  margin: 2rem 1rem 2rem 1rem;
+  margin: 0.9rem 0.5rem;
   font-size: 1.05rem;
 }
 
@@ -201,13 +271,84 @@ nav a.active {
   flex-grow: 1;
   overflow-y: auto;
   list-style: none;
-  padding: 0;
-  margin: 0 1rem;
+  padding: 0 0.5rem 0.5rem 0.5rem;
+  margin: 0;
 }
+
+/* ---------- Recipe list items ---------- */
 
 .recipe-item {
   cursor: pointer;
 }
+
+.recipe-item:active {
+  transform: scale(0.985);
+}
+
+.recipe-item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.recipe-item-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.recipe-item-stars {
+  display: flex;
+  gap: 0.1rem;
+  color: var(--orange);
+  font-size: 0.7rem;
+}
+
+/* ---------- Shopping list ---------- */
+
+.shopping-item {
+  cursor: pointer;
+}
+
+.shopping-item:active {
+  transform: scale(0.985);
+}
+
+.shopping-item-label {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.shopping-checkbox {
+  flex-shrink: 0;
+  width: 1.25rem;
+  height: 1.25rem;
+  border: 2px solid var(--lightgray);
+  border-radius: 50%;
+  box-sizing: border-box;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.shopping-item.checked .shopping-checkbox {
+  background-color: var(--green);
+  border-color: var(--green);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E");
+  background-size: 70%;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.shopping-item.checked .shopping-item-label {
+  text-decoration: line-through;
+  color: var(--text-muted);
+}
+
+/* ---------- Recipe popup ---------- */
 
 .popup-overlay {
   position: fixed;
@@ -215,46 +356,60 @@ nav a.active {
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.2);
+  background-color: rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
+  animation: fade-in 0.15s ease;
 }
 
 .popup {
   background-color: white;
-  border-radius: 10px;
-  width: 90%;
-  height: 90%;
+  border-radius: 16px;
+  width: 94%;
+  height: 93%;
+  max-width: 560px;
   position: relative;
   display: flex;
   flex-direction: column;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+  animation: pop-up 0.2s ease;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes pop-up {
+  from { opacity: 0; transform: translateY(16px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 .scrollable-content {
   overflow-y: auto;
   flex-grow: 1;
-  padding: 0 2rem 2rem 2rem;
+  padding: 0 1.25rem 1.25rem 1.25rem;
+  line-height: 1.5;
 }
 
-.popup h1 {
+.popup h1,
+.popup h2,
+.popup h3,
+.popup h4 {
   color: var(--green);
 }
 
 .popup h2 {
   margin-top: 0;
-  color: var(--green);
 }
 
 .popup h3 {
-  margin-top: 0rem;
+  margin-top: 0;
   margin-bottom: 0.5rem;
-  color: var(--green);
-}
-
-.popup h4 {
-  color: var(--green);
 }
 
 .popup ul {
@@ -271,51 +426,74 @@ nav a.active {
   position: absolute;
   top: 1rem;
   right: 1rem;
-  background: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.2rem;
+  height: 2.2rem;
+  background-color: var(--verylightgray);
   border: none;
-  font-size: 1.5rem;
+  border-radius: 50%;
+  font-size: 1.3rem;
+  color: var(--text);
   cursor: pointer;
+  transition: background-color 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.close-button:hover {
+  background-color: #eae8e4;
 }
 
 .star-rating {
   display: flex;
-  gap: 0.2rem;
-  margin-top: -1.25rem;
-  margin-bottom: 2.25rem;
-  padding: 0 2rem;
+  gap: 0.25rem;
+  margin-top: -1rem;
+  margin-bottom: 1.75rem;
+  padding: 0 1.25rem;
+  font-size: 1.15rem;
+}
+
+.star-rating.editable svg {
+  cursor: pointer;
 }
 
 .recipe-title {
   color: var(--green);
+  font-family: 'Merriweather', Georgia, serif;
   font-weight: 700;
-  font-size: 2em;
-  padding: 2rem 2rem 0 2rem;
+  font-size: 1.8em;
+  padding: 1.25rem 3.25rem 0 1.25rem;
+  overflow-wrap: break-word;
 }
 
 .horizontal-line {
-  width: 90%;
+  width: 100%;
   margin: 20px auto 10px;
   border: none;
-  border-top: 1px solid var(--lightgray);
+  border-top: 1px solid #e5e5e5;
 }
 
 .popup-buttons {
   display: flex;
   justify-content: space-between;
-  margin: 1.5rem;
-  margin-right: 2.7rem;
-  margin-bottom: 1.6rem;
-  font-size: 2em;
+  align-items: center;
+  margin: 0.75rem 1.25rem 1rem 1.25rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #eee;
+  font-size: 1.8em;
 }
 
 .delete-icon {
-  color: red;
+  color: #d64545;
   cursor: pointer;
   margin-left: 1rem;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .edit-icon {
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .check-icon {
@@ -327,13 +505,25 @@ nav a.active {
   font-family: inherit;
   font-size: inherit;
   color: inherit;
+  line-height: inherit;
   resize: none;
   width: 100%;
-  padding: 0.2rem;
-  margin: 0 0 0 -0.2rem;
-  background-color: transparent;
+  box-sizing: border-box;
+  padding: 0.4rem;
+  margin: 0;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background-color: var(--verylightgray);
   overflow-y: hidden;
+  outline: none;
 }
+
+.comment-textarea:focus {
+  border-color: var(--green);
+  background-color: white;
+}
+
+/* ---------- Ingredient editing in popup ---------- */
 
 .ingredient-edit-row-styled {
   display: flex;
@@ -341,57 +531,82 @@ nav a.active {
   width: 100%;
   align-items: center;
   margin-bottom: 0.8em;
+  gap: 0.4em;
+}
+
+.ingredient-edit-row-styled input {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+  padding: 0.35rem 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.15s ease;
+}
+
+.ingredient-edit-row-styled input:focus {
+  border-color: var(--green);
 }
 
 .ingredient-quantity-input-styled {
-  width: 28px;
-  font-family: inherit;
-  font-size: inherit;
+  width: 54px;
 }
 
 .ingredient-unit-input-styled {
-  width: 15px;
-  font-family: inherit;
-  font-size: inherit;
+  width: 34px;
+  text-align: center;
+  background-color: var(--verylightgray);
+  color: var(--text-muted);
 }
 
 .ingredient-name-input-styled {
-  flex-grow: 1;
-  flex-shrink: 1;
-  max-width: 180px; /* Adjust as needed */
-  font-family: inherit;
-  font-size: inherit;
+  width: 100%;
+  max-width: 180px;
 }
 
 .ingredient-trash-icon-styled {
+  flex-shrink: 0;
   margin-left: 0.2em;
   font-size: 1.3rem;
 }
 
 .add-ingredient-button-styled {
   padding: 0.5rem 1rem;
-  font-size: 1rem;
+  font-size: 0.95rem;
+  font-family: inherit;
+  font-weight: 600;
   background-color: var(--orange);
   color: white;
   border: none;
   cursor: pointer;
-  border-radius: 20px;
-  margin-top: 0em;
-  margin-bottom: -0.5em;
-  align-self: flex-start; /* Align to the start of the flex container */
+  border-radius: 999px;
+  margin-top: 0.2em;
+  align-self: flex-start;
+  transition: background-color 0.15s ease, transform 0.1s ease;
+}
+
+.add-ingredient-button-styled:hover {
+  background-color: var(--darkorange);
+}
+
+.add-ingredient-button-styled:active {
+  transform: scale(0.96);
 }
 
 .suggestions-dropdown {
   position: absolute;
   background-color: white;
-  border: 1px solid #ccc;
+  border: 1px solid #e0e0e0;
   max-height: 150px;
   overflow-y: auto;
   z-index: 100;
   left: 0;
-  right: 0; /* Make it span the width of its parent */
-  margin-top: 0.2em; /* Space between input and dropdown */
-  border-radius: 5px;
+  right: 0;
+  margin-top: 0.2em;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
 }
 
 .suggestion-item {
@@ -401,4 +616,397 @@ nav a.active {
 
 .suggestion-item:hover {
   background-color: var(--verylightgray);
+}
+
+/* ---------- Markdown comment rendering ---------- */
+
+.markdown-body p {
+  margin: 0.4em 0;
+}
+
+.markdown-body ul {
+  margin: 0.4em 0;
+}
+
+.markdown-body li {
+  margin: 0;
+  padding: 0.1rem 0;
+}
+
+.markdown-body h3 {
+  margin: 1em 0 0.3em;
+}
+
+.markdown-body hr {
+  margin: 1.2em 0 0.5em;
+  border: none;
+  border-top: 1px solid #e5e5e5;
+}
+
+/* ---------- Shopping list quantities ---------- */
+
+.add-ingredient-bar .shopping-qty-add-input {
+  width: 3.2rem;
+  margin-right: 0.5rem;
+  flex: none;
+  padding: 0.6rem 0.6rem;
+  text-align: center;
+}
+
+.shopping-qty-input {
+  width: 3rem;
+  padding: 0.3rem 0.4rem;
+  font-family: inherit;
+  font-size: 0.95rem;
+  color: inherit;
+  text-align: center;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background-color: white;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.shopping-qty-input:focus {
+  border-color: var(--green);
+}
+
+.shopping-unit {
+  margin-left: 0.3rem;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+.shopping-item.checked .shopping-qty-input,
+.shopping-item.checked .shopping-unit {
+  color: var(--text-muted);
+}
+
+/* Hide number input spinners for a cleaner look */
+.shopping-qty-input::-webkit-outer-spin-button,
+.shopping-qty-input::-webkit-inner-spin-button,
+.shopping-qty-add-input::-webkit-outer-spin-button,
+.shopping-qty-add-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.shopping-qty-input,
+.shopping-qty-add-input {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+/* ---------- Recipes on the shopping list ---------- */
+
+.shopping-recipes-section {
+  margin-top: 1.5rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #e5e5e5;
+}
+
+.shopping-recipes-title {
+  margin: 0 0 0.6rem 0.25rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+/* ---------- Add-to-list button in recipe popup ---------- */
+
+/* ---------- Cart icon on recipe list items ---------- */
+
+.cart-icon {
+  color: var(--orange);
+  cursor: pointer;
+  margin-left: 1rem;
+  font-size: 1.25rem;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.cart-icon.added {
+  color: var(--green);
+  cursor: default;
+}
+
+/* ---------- Multiplier stepper in recipe popup ---------- */
+
+.multiplier-control {
+  display: flex;
+  align-items: center;
+  gap: 0.1rem;
+  border: 1px solid #ddd;
+  border-radius: 999px;
+  background-color: white;
+}
+
+.multiplier-button {
+  width: 1.9rem;
+  height: 1.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  border-radius: 50%;
+  font-size: 1.1rem;
+  color: var(--text);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.multiplier-button:active {
+  background-color: var(--verylightgray);
+}
+
+.multiplier-value {
+  min-width: 1.6rem;
+  text-align: center;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+/* ---------- Recipe multiplier badge on shopping list ---------- */
+
+.recipe-multiplier-badge {
+  margin-left: 0.5rem;
+  padding: 0.1rem 0.5rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: white;
+  background-color: var(--orange);
+  border-radius: 999px;
+}
+
+/* ---------- Portions ---------- */
+
+.portions-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0 1.25rem;
+  margin: -1.25rem 0 1.25rem;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+.shopping-recipes-total {
+  margin-left: 0.6rem;
+  font-weight: 400;
+  color: var(--orange);
+}
+
+.recipe-portions-inline {
+  margin-left: 0.7rem;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  font-size: 0.5em;
+  font-weight: 400;
+  color: var(--text-muted);
+  white-space: nowrap;
+  vertical-align: 0.15em;
+}
+
+.cart-count {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--green);
+}
+
+/* Stepper shown on recipe rows that are already on the shopping list */
+.cart-stepper {
+  border-color: var(--green);
+}
+
+.popup-cart {
+  margin-left: 0;
+  font-size: 1.6rem;
+}
+
+/* ---------- Recipe images ---------- */
+
+.recipe-images {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  margin-top: 1rem;
+  padding-bottom: 0.3rem;
+  -webkit-overflow-scrolling: touch;
+}
+
+.recipe-image {
+  height: 160px;
+  max-width: 240px;
+  object-fit: cover;
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+
+.recipe-image-edit {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.image-actions {
+  position: absolute;
+  bottom: 0.4rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 0.2rem;
+  background-color: rgba(0, 0, 0, 0.5);
+  border-radius: 999px;
+  padding: 0.15rem 0.35rem;
+}
+
+.image-actions button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1rem;
+  padding: 0.25rem;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.image-actions button:disabled {
+  opacity: 0.35;
+}
+
+.image-actions .image-delete {
+  color: #ff8a8a;
+}
+
+.image-add-buttons {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.image-add-buttons button {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 1rem;
+  font-size: 0.95rem;
+  font-family: inherit;
+  font-weight: 600;
+  background-color: var(--orange);
+  color: white;
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background-color 0.15s ease, transform 0.1s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.image-add-buttons button:hover {
+  background-color: var(--darkorange);
+}
+
+.image-add-buttons button:active {
+  transform: scale(0.96);
+}
+
+/* Hold-and-drag reordering */
+.recipe-image-edit {
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  /* The browser must never claim touches on these for scrolling, or it
+     fires pointercancel mid-drag and the reorder dies */
+  touch-action: none;
+}
+
+.recipe-image-placeholder {
+  flex-shrink: 0;
+  box-sizing: border-box;
+  border: 2px dashed #ccc;
+  border-radius: 10px;
+  background-color: var(--verylightgray);
+}
+
+.drag-ghost {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 2000;
+  pointer-events: none;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+  opacity: 0.95;
+}
+
+.drag-ghost img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* ---------- Fullscreen image lightbox ---------- */
+
+.lightbox-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.92);
+  z-index: 3000;
+  animation: fade-in 0.15s ease;
+}
+
+.lightbox-strip {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+
+.lightbox-strip::-webkit-scrollbar {
+  display: none;
+}
+
+.lightbox-slide {
+  flex: 0 0 100%;
+  width: 100%;
+  height: 100%;
+  scroll-snap-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem 0.5rem;
+  box-sizing: border-box;
+}
+
+.lightbox-slide img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border-radius: 6px;
+}
+
+.lightbox-close {
+  position: fixed;
+  top: calc(0.75rem + env(safe-area-inset-top));
+  right: 0.75rem;
+  z-index: 3001;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  background-color: rgba(255, 255, 255, 0.15);
+  border: none;
+  border-radius: 50%;
+  color: white;
+  font-size: 1.4rem;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
 }

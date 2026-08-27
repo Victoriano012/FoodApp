@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Route, NavLink, Routes } from 'react-router-dom';
+import { FiBookOpen, FiShoppingCart, FiList } from 'react-icons/fi';
 import Recipes from './components/Recipes';
 import ShoppingList from './components/ShoppingList';
 import Ingredients from './components/Ingredients';
@@ -16,13 +17,22 @@ function App() {
         <nav>
           <ul>
             <li>
-              <NavLink to="/" className={({ isActive }) => (isActive ? 'active' : '')}>Recipes</NavLink>
-            </li>
-            <li className="shopping-list-li">
-              <NavLink to="/shopping-list" className={({ isActive }) => (isActive ? 'active' : '')}>Shopping List</NavLink>
+              <NavLink to="/" className={({ isActive }) => (isActive ? 'active' : '')}>
+                <FiBookOpen className="nav-icon" />
+                <span>Recipes</span>
+              </NavLink>
             </li>
             <li>
-              <NavLink to="/ingredients" className={({ isActive }) => (isActive ? 'active' : '')}>Ingredients</NavLink>
+              <NavLink to="/shopping-list" className={({ isActive }) => (isActive ? 'active' : '')}>
+                <FiShoppingCart className="nav-icon" />
+                <span>Shopping</span>
+              </NavLink>
+            </li>
+            <li>
+              <NavLink to="/ingredients" className={({ isActive }) => (isActive ? 'active' : '')}>
+                <FiList className="nav-icon" />
+                <span>Ingredients</span>
+              </NavLink>
             </li>
           </ul>
         </nav>

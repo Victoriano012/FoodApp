@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { FiTrash2 } from 'react-icons/fi';
 
 function Ingredients() {
@@ -86,6 +86,7 @@ function Ingredients() {
               <option value="-">-</option>
               <option value=""> </option>
               <option value="g">g</option>
+              <option value="mL">mL</option>
             </select>
             <button onClick={handleAddIngredient}>Add</button>
           </div>
@@ -107,6 +108,7 @@ function Ingredients() {
                   >
                     <option value=""> </option>
                     <option value="g">g</option>
+                    <option value="mL">mL</option>
                   </select>
                   <FiTrash2
                     className="delete-icon"
