@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { FiTrash2, FiShoppingCart } from 'react-icons/fi';
+import useDragReorder, { moveItem } from '../useDragReorder';
 
 function Ingredients() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -59,14 +60,24 @@ function Ingredients() {
     ));
   };
 
-  const filteredIngredients = ingredients
-    .filter(ingredient =>
-      ingredient.name.toLowerCase().startsWith(searchTerm.toLowerCase())
-    )
-    .filter(ingredient =>
-      unitFilter === '-' ? true : ingredient.unit === unitFilter
-    )
-    .sort((a, b) => a.name.localeCompare(b.name));
+  // Browsing shows the manual (drag to rearrange) order; searching or
+  // filtering by unit shows matches alphabetically
+  const filtering = searchTerm !== '' || unitFilter !== '-';
+  const filteredIngredients = filtering
+    ? ingredients
+        .filter(ingredient =>
+          ingredient.name.toLowerCase().startsWith(searchTerm.toLowerCase())
+        )
+        .filter(ingredient =>
+          unitFilter === '-' ? true : ingredient.unit === unitFilter
+        )
+        .sort((a, b) => a.name.localeCompare(b.name))
+    : ingredients;
+
+  const { rowRef, rowProps, dragFrom } = useDragReorder(
+    filtering ? 0 : ingredients.length,
+    (from, to) => setIngredients(moveItem(ingredients, from, to))
+  );
 
   return (
     <div className="ingredients-page">
@@ -107,8 +118,13 @@ function Ingredients() {
             {filteredIngredients.length === 0 && ingredients.length > 0 && (
               <li className="info-message">No ingredients match your search.</li>
             )}
-            {filteredIngredients.map(ingredient => (
-              <li key={ingredient.name}>
+            {filteredIngredients.map((ingredient, idx) => (
+              <li
+                key={ingredient.name}
+                ref={rowRef(idx)}
+                {...rowProps(idx)}
+                className={dragFrom === idx ? 'drag-row' : ''}
+              >
                 <span>{ingredient.name}</span>
                 <div>
                   <FiShoppingCart

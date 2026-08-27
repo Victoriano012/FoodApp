@@ -260,6 +260,15 @@ li {
   box-shadow: var(--card-shadow);
   transition: transform 0.1s ease, box-shadow 0.15s ease;
   -webkit-tap-highlight-color: transparent;
+  /* Rows are held to reorder — a long press must not select text instead */
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+.ingredients-container li input {
+  user-select: text;
+  -webkit-user-select: text;
 }
 
 .ingredients-container li select {
@@ -365,22 +374,7 @@ li.info-message {
   transform: scale(0.985);
 }
 
-/* Grip for drag-to-reorder rows. touch-action: none is what actually stops
-   the browser from scrolling instead of dragging on touch screens. */
-.drag-handle {
-  display: flex;
-  align-items: center;
-  flex-shrink: 0;
-  color: #c5c2bc;
-  font-size: 1.2rem;
-  padding: 0.25rem 0.4rem 0.25rem 0;
-  margin-left: -0.25rem;
-  touch-action: none;
-  cursor: grab;
-  -webkit-tap-highlight-color: transparent;
-}
-
-/* The row currently being dragged */
+/* The row currently being dragged (hold a row, then move it) */
 .drag-row {
   position: relative;
   z-index: 5;
@@ -656,6 +650,15 @@ li.info-message {
   align-items: center;
   margin-bottom: 0.8em;
   gap: 0.4em;
+  /* Rows are held to reorder — a long press must not select text instead */
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+.ingredient-edit-row-styled input {
+  user-select: text;
+  -webkit-user-select: text;
 }
 
 .ingredient-edit-row-styled input {

@@ -1,7 +1,6 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { FiCamera, FiCheck, FiEdit3, FiImage, FiShoppingCart, FiTrash2, FiX } from 'react-icons/fi';
-import { MdDragIndicator } from 'react-icons/md';
 import useDragReorder, { moveItem } from '../useDragReorder';
 import { FaStar } from 'react-icons/fa';
 import ReactMarkdown from 'react-markdown';
@@ -122,7 +121,7 @@ function Recipes() {
     : recipes;
 
   // Drag-to-reorder only makes sense on the full, unfiltered list
-  const { rowRef: recipeRowRef, handleProps: recipeHandleProps, dragFrom: recipeDragFrom } = useDragReorder(
+  const { rowRef: recipeRowRef, rowProps: recipeRowProps, dragFrom: recipeDragFrom } = useDragReorder(
     query ? 0 : recipes.length,
     (from, to) => setRecipes(moveItem(recipes, from, to))
   );
@@ -409,7 +408,7 @@ function Recipes() {
   };
 
   const ingredientCount = selectedRecipe ? selectedRecipe.ingredients.length : 0;
-  const { rowRef, handleProps, dragFrom } = useDragReorder(ingredientCount, (from, to) => {
+  const { rowRef, rowProps, dragFrom } = useDragReorder(ingredientCount, (from, to) => {
     handleSave({ ...selectedRecipe, ingredients: moveItem(selectedRecipe.ingredients, from, to) });
   });
 
@@ -466,16 +465,12 @@ function Recipes() {
             )}
             {filteredRecipes.map((recipe, idx) => (
               <li
-                key={idx}
+                key={recipe.name}
                 ref={recipeRowRef(idx)}
+                {...recipeRowProps(idx)}
                 onClick={() => handleRecipeClick(recipe)}
                 className={`recipe-item${recipeDragFrom === idx ? ' drag-row' : ''}`}
               >
-                {!query && (
-                  <span {...recipeHandleProps(idx)} onClick={(e) => e.stopPropagation()}>
-                    <MdDragIndicator />
-                  </span>
-                )}
                 <span className="recipe-item-info">
                   <span>{recipe.name}</span>
                   <span className="recipe-item-meta">
@@ -563,11 +558,9 @@ function Recipes() {
                     <div
                       key={index}
                       ref={rowRef(index)}
+                      {...rowProps(index)}
                       className={`ingredient-edit-row ingredient-edit-row-styled${dragFrom === index ? ' drag-row' : ''}`}
                     >
-                      <span {...handleProps(index)}>
-                        <MdDragIndicator />
-                      </span>
                       <input
                         type="number"
                         value={ing.quantity}

@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { FiTrash2, FiX } from 'react-icons/fi';
-import { MdDragIndicator } from 'react-icons/md';
 import useDragReorder, { moveItem } from '../useDragReorder';
 import { FaStar } from 'react-icons/fa';
 import ReactMarkdown from 'react-markdown';
@@ -98,7 +97,7 @@ function ShoppingList() {
   // Manual order (drag to rearrange); checked items still sink to the bottom
   const sortedItems = [...items.filter(i => !i.checked), ...items.filter(i => i.checked)];
 
-  const { rowRef, handleProps, dragFrom } = useDragReorder(sortedItems.length, (from, to) => {
+  const { rowRef, rowProps, dragFrom } = useDragReorder(sortedItems.length, (from, to) => {
     setItems(moveItem(sortedItems, from, to));
   });
 
@@ -144,12 +143,10 @@ function ShoppingList() {
                   <li
                     key={item.name}
                     ref={rowRef(idx)}
+                    {...rowProps(idx)}
                     className={`shopping-item${item.checked ? ' checked' : ''}${dragFrom === idx ? ' drag-row' : ''}`}
                     onClick={() => handleToggleItem(item.name)}
                   >
-                    <span {...handleProps(idx)} onClick={(e) => e.stopPropagation()}>
-                      <MdDragIndicator />
-                    </span>
                     <span className="shopping-item-label">
                       <span className="shopping-checkbox" aria-hidden="true" />
                       <span>{item.name}</span>

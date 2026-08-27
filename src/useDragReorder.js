@@ -1,14 +1,19 @@
-import { useRef, useState } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 
-// Vertical drag-to-reorder driven by a per-row grip, shared by the shopping
-// list and the recipe ingredient editor. The gripped row follows the finger,
-// the other rows slide out of the way, and onReorder(from, to) fires on
-// release. Attach rowRef(i) to each row and handleProps(i) to its grip; the
-// grip needs touch-action: none so the browser doesn't scroll instead.
+const HOLD_MS = 350;
+const HOLD_SLOP = 10;
+
+// Vertical drag-to-reorder shared by every list in the app. Hold a row for a
+// beat (finger still), then move it: the row follows the finger, the other
+// rows slide out of the way, and onReorder(from, to) fires on release.
+// Attach rowRef(i) and rowProps(i) to each row. Moving before the hold
+// elapses cancels it, so normal scrolling and taps are unaffected.
 export default function useDragReorder(count, onReorder) {
   const [dragFrom, setDragFrom] = useState(null);
   const rowRefs = useRef([]);
-  const s = useRef(null);
+  const s = useRef(null); // active drag
+  const hold = useRef(false); // a long-press is pending
+  const cleanup = useRef(null); // rows whose transforms outlive the drop
 
   const rowRef = (i) => (el) => { rowRefs.current[i] = el; };
 
@@ -19,11 +24,20 @@ export default function useDragReorder(count, onReorder) {
     return null;
   };
 
-  const startDrag = (index, e) => {
-    if (s.current) return;
+  // The drop leaves the drag transforms in place; they only stop making sense
+  // once React has re-rendered the rows in their new order, so clear them
+  // after that commit but before it paints
+  useLayoutEffect(() => {
+    if (!cleanup.current) return;
+    const rows = cleanup.current;
+    cleanup.current = null;
+    rows.forEach((el) => { if (el) { el.style.transition = 'none'; el.style.transform = ''; } });
+    requestAnimationFrame(() => rows.forEach((el) => { if (el) el.style.transition = ''; }));
+  });
+
+  const beginDrag = (index, x, y) => {
     const rows = rowRefs.current.slice(0, count);
-    if (!rows[index]) return;
-    e.preventDefault();
+    if (s.current || !rows[index]) return;
     const scroller = findScroller(rows[index]);
     const scrollTop0 = scroller ? scroller.scrollTop : 0;
     // Row positions in scroll-content coordinates: they stay valid while the
@@ -33,12 +47,14 @@ export default function useDragReorder(count, onReorder) {
       const r = el.getBoundingClientRect();
       return { height: r.height, mid: r.top + r.height / 2 + scrollTop0 };
     });
-    s.current = { from: index, target: index, startY: e.clientY, lastY: e.clientY, scroller, scrollTop0, slots, rows, edgeDir: 0, raf: null };
+    s.current = { from: index, target: index, startY: y, lastY: y, scroller, scrollTop0, slots, rows, edgeDir: 0, raf: null };
     // Neighbours slide out of the way smoothly; the gripped row sticks to the
     // finger. Inline so nothing animates on the post-drop re-render.
     rows.forEach((el, i) => { if (el) el.style.transition = i === index ? 'none' : 'transform 0.15s ease'; });
     setDragFrom(index);
     if (navigator.vibrate) navigator.vibrate(20);
+    if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
+    document.body.dataset.rowDrag = '1'; // tells the tab-swipe shell to stand down
 
     const apply = () => {
       const st = s.current;
@@ -84,17 +100,26 @@ export default function useDragReorder(count, onReorder) {
     };
     s.current.raf = requestAnimationFrame(tick);
 
+    // The finger is dragging a row now, not scrolling, selecting, or tapping
+    const blockTouch = (ev) => ev.preventDefault();
+    const blockCtx = (ev) => ev.preventDefault();
+    const blockClick = (ev) => { ev.stopPropagation(); ev.preventDefault(); };
+    document.addEventListener('touchmove', blockTouch, { passive: false });
+    document.addEventListener('contextmenu', blockCtx);
+    document.addEventListener('click', blockClick, true);
+
     const onUp = () => {
       document.removeEventListener('pointermove', onMove);
       document.removeEventListener('pointerup', onUp);
       document.removeEventListener('pointercancel', onUp);
+      document.removeEventListener('touchmove', blockTouch);
+      document.removeEventListener('contextmenu', blockCtx);
+      setTimeout(() => document.removeEventListener('click', blockClick, true), 100);
+      delete document.body.dataset.rowDrag;
       const st = s.current;
       cancelAnimationFrame(st.raf);
-      // Clear transforms with transitions off so nothing animates across the
-      // re-render; restore stylesheet transitions a frame later
-      st.rows.forEach((el) => { if (el) { el.style.transition = 'none'; el.style.transform = ''; } });
-      requestAnimationFrame(() => st.rows.forEach((el) => { if (el) el.style.transition = ''; }));
       const { from, target } = st;
+      cleanup.current = st.rows;
       s.current = null;
       setDragFrom(null);
       if (from !== target) onReorder(from, target);
@@ -104,12 +129,35 @@ export default function useDragReorder(count, onReorder) {
     document.addEventListener('pointercancel', onUp);
   };
 
-  const handleProps = (index) => ({
-    className: 'drag-handle',
-    onPointerDown: (e) => startDrag(index, e),
-  });
+  const onPointerDown = (index) => (e) => {
+    if (s.current || hold.current) return;
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    const startX = e.clientX;
+    const startY = e.clientY;
+    hold.current = true;
+    const cancel = () => {
+      clearTimeout(timer);
+      document.removeEventListener('pointermove', onHoldMove);
+      document.removeEventListener('pointerup', cancel);
+      document.removeEventListener('pointercancel', cancel);
+      hold.current = false;
+    };
+    // Moving early means a scroll or a swipe, not a hold
+    const onHoldMove = (ev) => {
+      if (Math.hypot(ev.clientX - startX, ev.clientY - startY) > HOLD_SLOP) cancel();
+    };
+    const timer = setTimeout(() => {
+      cancel();
+      beginDrag(index, startX, startY);
+    }, HOLD_MS);
+    document.addEventListener('pointermove', onHoldMove);
+    document.addEventListener('pointerup', cancel);
+    document.addEventListener('pointercancel', cancel);
+  };
 
-  return { rowRef, handleProps, dragFrom };
+  const rowProps = (index) => ({ onPointerDown: onPointerDown(index) });
+
+  return { rowRef, rowProps, dragFrom };
 }
 
 // Standard move-and-reinsert used by every onReorder
