@@ -4,6 +4,8 @@ import { VitePWA } from 'vite-plugin-pwa'
 
 // https://vite.dev/config/
 export default defineConfig({
+  // Must match the GitHub repo name (served at https://<user>.github.io/FoodApp/)
+  base: '/FoodApp/',
   plugins: [
     react(),
     VitePWA({
