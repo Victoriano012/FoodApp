@@ -107,7 +107,10 @@ function AppShell() {
       d.locked = true;
       d.width = trackRef.current.clientWidth;
       trackRef.current.style.transition = 'none';
-      setShowNeighbors(true);
+      // Mount the neighbours synchronously: a plain setState here renders at
+      // "continuous event" priority, which React may slice across frames on a
+      // slow phone — meanwhile the finger keeps revealing an empty strip
+      flushSync(() => setShowNeighbors(true));
     }
     // Keep a ~100ms window of positions for flick detection on release
     const now = performance.now();
