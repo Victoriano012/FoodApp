@@ -15,7 +15,7 @@ function ShoppingList() {
   const [newQuantity, setNewQuantity] = useState('');
   const [items, setItems] = useState(() => loadShoppingList());
   const [selectedRecipes, setSelectedRecipes] = useState(() => loadShoppingRecipes());
-  const [allIngredients] = useState(() => {
+  const [allIngredients, setAllIngredients] = useState(() => {
     return JSON.parse(localStorage.getItem('ingredients')) || [];
   });
 
@@ -37,6 +37,13 @@ function ShoppingList() {
     const name = newItem.trim();
     if (name && !items.find(i => i.name.toLowerCase() === name.toLowerCase())) {
       const capitalized = name.charAt(0).toUpperCase() + name.slice(1);
+      // Anything bought that isn't in the Ingredients list yet gets added
+      // there automatically, same as ingredients typed into a recipe
+      if (!allIngredients.find(i => i.name.toLowerCase() === name.toLowerCase())) {
+        const updated = [...allIngredients, { name: capitalized, unit: '' }];
+        setAllIngredients(updated);
+        localStorage.setItem('ingredients', JSON.stringify(updated));
+      }
       setItems([...items, {
         name: capitalized,
         quantity: newQuantity,

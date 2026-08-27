@@ -102,22 +102,30 @@ function Recipes() {
     setShoppingRecipes(updated);
   };
 
-  // Recipes whose name contains the query come first; recipes that only
-  // contain an ingredient matching the query follow
+  // Browsing shows the manual (drag to rearrange) order. Searching ranks
+  // recipes whose name contains the query (alphabetical) ahead of recipes
+  // that only contain an ingredient matching it
   const query = searchTerm.toLowerCase();
   const byName = (a, b) => a.name.localeCompare(b.name);
-  const nameMatches = recipes
-    .filter(recipe => recipe.name.toLowerCase().includes(query))
-    .sort(byName);
-  const ingredientMatches = query
-    ? recipes
-        .filter(recipe =>
-          !recipe.name.toLowerCase().includes(query) &&
-          recipe.ingredients.some(ing => ing.name.toLowerCase().includes(query))
-        )
-        .sort(byName)
-    : [];
-  const filteredRecipes = [...nameMatches, ...ingredientMatches];
+  const filteredRecipes = query
+    ? [
+        ...recipes
+          .filter(recipe => recipe.name.toLowerCase().includes(query))
+          .sort(byName),
+        ...recipes
+          .filter(recipe =>
+            !recipe.name.toLowerCase().includes(query) &&
+            recipe.ingredients.some(ing => ing.name.toLowerCase().includes(query))
+          )
+          .sort(byName),
+      ]
+    : recipes;
+
+  // Drag-to-reorder only makes sense on the full, unfiltered list
+  const { rowRef: recipeRowRef, handleProps: recipeHandleProps, dragFrom: recipeDragFrom } = useDragReorder(
+    query ? 0 : recipes.length,
+    (from, to) => setRecipes(moveItem(recipes, from, to))
+  );
 
   const handleRecipeClick = (recipe) => {
     editIndexRef.current = recipes.indexOf(recipe);
@@ -457,7 +465,17 @@ function Recipes() {
               <li className="info-message">No recipes match your search.</li>
             )}
             {filteredRecipes.map((recipe, idx) => (
-              <li key={idx} onClick={() => handleRecipeClick(recipe)} className="recipe-item">
+              <li
+                key={idx}
+                ref={recipeRowRef(idx)}
+                onClick={() => handleRecipeClick(recipe)}
+                className={`recipe-item${recipeDragFrom === idx ? ' drag-row' : ''}`}
+              >
+                {!query && (
+                  <span {...recipeHandleProps(idx)} onClick={(e) => e.stopPropagation()}>
+                    <MdDragIndicator />
+                  </span>
+                )}
                 <span className="recipe-item-info">
                   <span>{recipe.name}</span>
                   <span className="recipe-item-meta">
