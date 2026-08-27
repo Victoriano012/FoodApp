@@ -34,6 +34,11 @@ h1 {
   flex-direction: column;
   height: 100vh;
   height: 100dvh;
+  /* Pages scroll internally (see .content); the body never scrolls, so the
+     bottom nav can never be dragged around by the browser */
+  overflow: hidden;
+  box-sizing: border-box;
+  padding-bottom: calc(var(--nav-height) + env(safe-area-inset-bottom));
 }
 
 /* Sliding track for tab swipes: the current page sits in flow, the
@@ -46,7 +51,6 @@ h1 {
   min-height: 0;
   position: relative;
   touch-action: pan-y;
-  will-change: transform;
 }
 
 .page,
@@ -55,6 +59,7 @@ h1 {
   display: flex;
   flex-direction: column;
   min-height: 0;
+  overflow: hidden;
   background-color: var(--bg);
 }
 
@@ -68,6 +73,8 @@ h1 {
 
 .content {
   flex: 1;
+  min-height: 0;
+  overflow-y: auto;
   padding: 0.25rem;
 }
 
@@ -90,11 +97,25 @@ nav ul {
   margin: 0;
   padding: 0;
   width: 100%;
+  position: relative;
+}
+
+/* Sliding highlight behind the active tab; follows the finger during swipes */
+.nav-indicator {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: calc(100% / 3);
+  background-color: var(--darkorange);
+  transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.3, 1);
 }
 
 nav ul li {
   flex: 1;
   text-align: center;
+  position: relative;
+  z-index: 1;
 }
 
 nav ul li a {
@@ -115,10 +136,6 @@ nav ul li a {
 
 .nav-icon {
   font-size: 1.4rem;
-}
-
-nav ul li:has(a.active) {
-  background-color: var(--darkorange);
 }
 
 nav a.active {
@@ -273,8 +290,8 @@ li.info-message {
 .ingredients-page {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - var(--nav-height));
-  height: calc(100dvh - var(--nav-height) - env(safe-area-inset-bottom));
+  flex: 1;
+  min-height: 0;
 }
 
 .ingredients-page .content {

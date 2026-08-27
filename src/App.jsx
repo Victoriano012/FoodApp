@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 import { BrowserRouter as Router, Route, NavLink, Routes, useNavigate, useLocation } from 'react-router-dom';
 import { FiBookOpen, FiShoppingCart, FiList } from 'react-icons/fi';
@@ -16,18 +16,33 @@ function pageFor(path) {
 }
 
 // Swipe left/right anywhere to move between tabs: the pages follow the finger
-// on a sliding track, and on release either settle onto the neighbour tab
-// (if dragged far enough or flicked) or spring back.
+// on a sliding track (and the nav highlight slides along), then on release
+// either settle onto the neighbour tab or spring back.
 function AppShell() {
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const index = TAB_ORDER.indexOf(pathname);
   const trackRef = useRef(null);
+  const indicatorRef = useRef(null);
   const drag = useRef(null);
   const settling = useRef(false);
   // While a drag is live, the neighbouring pages are mounted beside the
   // current one so they can slide into view
   const [showNeighbors, setShowNeighbors] = useState(false);
+
+  // Keep the nav highlight on the active tab (animates via its CSS transition)
+  useEffect(() => {
+    const el = indicatorRef.current;
+    if (el) el.style.transform = `translateX(${index * 100}%)`;
+  }, [index]);
+
+  const moveIndicator = (fractionalIndex, instant) => {
+    const el = indicatorRef.current;
+    if (!el) return;
+    el.style.transition = instant ? 'none' : '';
+    const pos = Math.min(TAB_ORDER.length - 1, Math.max(0, fractionalIndex));
+    el.style.transform = `translateX(${pos * 100}%)`;
+  };
 
   // Animate the track to `transform`, then run `after` exactly once
   const settle = (transform, after) => {
@@ -40,10 +55,14 @@ function AppShell() {
       el.removeEventListener('transitionend', finish);
       settling.current = false;
       after();
+      // Idle again: drop the inline transform entirely so the track is no
+      // longer a containing block for the fixed popups/lightbox inside it
+      el.style.transition = 'none';
+      el.style.transform = '';
     };
     el.addEventListener('transitionend', finish);
-    setTimeout(finish, 300); // fallback in case transitionend never fires
-    el.style.transition = 'transform 0.22s cubic-bezier(0.2, 0.8, 0.3, 1)';
+    setTimeout(finish, 320); // fallback in case transitionend never fires
+    el.style.transition = 'transform 0.25s cubic-bezier(0.2, 0.8, 0.3, 1)';
     el.style.transform = transform;
   };
 
@@ -65,9 +84,7 @@ function AppShell() {
       locked: false,
       offset: 0,
       width: 0,
-      lastX: t.clientX,
-      lastT: performance.now(),
-      vel: 0,
+      samples: [{ x: t.clientX, t: performance.now() }],
     };
   };
 
@@ -89,16 +106,15 @@ function AppShell() {
       trackRef.current.style.transition = 'none';
       setShowNeighbors(true);
     }
-    // Blended velocity for flick detection on release
+    // Keep a ~100ms window of positions for flick detection on release
     const now = performance.now();
-    const dt = now - d.lastT;
-    if (dt > 0) d.vel = 0.7 * ((t.clientX - d.lastX) / dt) + 0.3 * d.vel;
-    d.lastX = t.clientX;
-    d.lastT = now;
+    d.samples.push({ x: t.clientX, t: now });
+    while (d.samples.length > 2 && now - d.samples[0].t > 100) d.samples.shift();
     // Rubber-band when there is no tab on that side
     const atEdge = (dx > 0 && index === 0) || (dx < 0 && index === TAB_ORDER.length - 1);
     d.offset = atEdge ? dx / 3 : dx;
     trackRef.current.style.transform = `translateX(${d.offset}px)`;
+    moveIndicator(index - d.offset / d.width, true);
   };
 
   const endDrag = (cancelled) => {
@@ -108,22 +124,35 @@ function AppShell() {
     const dir = d.offset < 0 ? 1 : -1;
     const target = index + dir;
     const inRange = target >= 0 && target < TAB_ORDER.length;
-    const farEnough = Math.abs(d.offset) > d.width * 0.35;
-    const flicked = Math.abs(d.vel) > 0.4 && d.vel < 0 === (dir === 1) && Math.abs(d.offset) > 25;
-    if (!cancelled && inRange && (farEnough || flicked)) {
+    // Velocity over the last ~100ms — a finger decelerating right before
+    // lift-off must not erase the flick it just made
+    const first = d.samples[0];
+    const last = d.samples[d.samples.length - 1];
+    // No touchmove fires while the finger rests, so samples can be stale:
+    // a pause before lift-off means there is no flick, however fast the
+    // finger moved earlier
+    const rested = performance.now() - last.t > 80;
+    const vel = !rested && last.t > first.t ? (last.x - first.x) / (last.t - first.t) : 0;
+    const flickDir = Math.abs(vel) > 0.35 ? (vel < 0 ? 1 : -1) : 0;
+    let commit = inRange && !cancelled;
+    if (commit) {
+      if (flickDir === dir) commit = Math.abs(d.offset) > 25;
+      else if (flickDir === -dir) commit = false; // flicked back: cancel
+      else commit = Math.abs(d.offset) > d.width * 0.3;
+    }
+    if (commit) {
+      moveIndicator(target, false);
       settle(`translateX(${-dir * d.width}px)`, () => {
-        // Swap the route in synchronously, then snap the track back to 0 in
-        // the same frame — the new page is already exactly where the eye is
+        // Swap the route in synchronously while the track transform still
+        // matches, so the new page is already exactly where the eye is
         flushSync(() => {
           setShowNeighbors(false);
           navigate(TAB_ORDER[target]);
         });
-        const el = trackRef.current;
-        el.style.transition = 'none';
-        el.style.transform = 'translateX(0)';
       });
     } else {
-      settle('translateX(0)', () => setShowNeighbors(false));
+      moveIndicator(index, false);
+      settle('translateX(0px)', () => setShowNeighbors(false));
     }
   };
 
@@ -156,6 +185,7 @@ function AppShell() {
       </div>
       <nav>
         <ul>
+          <li className="nav-indicator" aria-hidden="true" ref={indicatorRef} />
           <li>
             <NavLink to="/" className={({ isActive }) => (isActive ? 'active' : '')}>
               <FiBookOpen className="nav-icon" />
