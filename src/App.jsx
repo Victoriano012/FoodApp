@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
-import { BrowserRouter as Router, Route, NavLink, Routes, useNavigate, useLocation } from 'react-router-dom';
+import { createBrowserRouter, RouterProvider, Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { FiBookOpen, FiShoppingCart, FiList } from 'react-icons/fi';
 import Recipes from './components/Recipes';
 import ShoppingList from './components/ShoppingList';
@@ -49,7 +49,10 @@ function AppShell() {
     const el = trackRef.current;
     settling.current = true;
     let done = false;
-    const finish = () => {
+    const finish = (e) => {
+      // Only the track's own transform transition counts — transitionend
+      // events from elements inside the pages bubble up here too
+      if (e && (e.target !== el || e.propertyName !== 'transform')) return;
       if (done) return;
       done = true;
       el.removeEventListener('transitionend', finish);
@@ -144,11 +147,13 @@ function AppShell() {
       moveIndicator(target, false);
       settle(`translateX(${-dir * d.width}px)`, () => {
         // Swap the route in synchronously while the track transform still
-        // matches, so the new page is already exactly where the eye is
-        flushSync(() => {
-          setShowNeighbors(false);
-          navigate(TAB_ORDER[target]);
-        });
+        // matches, so the new page is already exactly where the eye is.
+        // navigate() alone is NOT flushed by the flushSync wrapper — React
+        // Router defers it in a low-priority transition, which painted the
+        // old page fullscreen for a few frames; its own flushSync option
+        // forces the route swap to commit in this same task.
+        flushSync(() => setShowNeighbors(false));
+        navigate(TAB_ORDER[target], { flushSync: true });
       });
     } else {
       moveIndicator(index, false);
@@ -171,11 +176,7 @@ function AppShell() {
           </div>
         )}
         <div className="page">
-          <Routes>
-            <Route path="/" element={<Recipes />} />
-            <Route path="/shopping-list" element={<ShoppingList />} />
-            <Route path="/ingredients" element={<Ingredients />} />
-          </Routes>
+          <Outlet />
         </div>
         {showNeighbors && index < TAB_ORDER.length - 1 && (
           <div className="page-pane" style={{ left: '100%' }}>
@@ -210,12 +211,25 @@ function AppShell() {
   );
 }
 
+// The data router (instead of <BrowserRouter>) is what makes
+// navigate(..., { flushSync: true }) actually commit synchronously
+const router = createBrowserRouter(
+  [
+    {
+      path: '/',
+      element: <AppShell />,
+      children: [
+        { index: true, element: <Recipes /> },
+        { path: 'shopping-list', element: <ShoppingList /> },
+        { path: 'ingredients', element: <Ingredients /> },
+      ],
+    },
+  ],
+  { basename: import.meta.env.BASE_URL }
+);
+
 function App() {
-  return (
-    <Router basename={import.meta.env.BASE_URL}>
-      <AppShell />
-    </Router>
-  );
+  return <RouterProvider router={router} />;
 }
 
 export default App;
