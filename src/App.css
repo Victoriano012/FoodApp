@@ -36,6 +36,32 @@ h1 {
   height: 100dvh;
 }
 
+/* Wrapper around the routed page; lets tab swipes animate a slide-in */
+.page {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.page.slide-left {
+  animation: page-slide-left 0.18s ease-out;
+}
+
+.page.slide-right {
+  animation: page-slide-right 0.18s ease-out;
+}
+
+@keyframes page-slide-left {
+  from { transform: translateX(24px); opacity: 0.6; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes page-slide-right {
+  from { transform: translateX(-24px); opacity: 0.6; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
 .content {
   flex: 1;
   padding: 0.25rem;
