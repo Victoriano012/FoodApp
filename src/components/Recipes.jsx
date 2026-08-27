@@ -4,7 +4,7 @@ import { FiCamera, FiCheck, FiEdit3, FiImage, FiShoppingCart, FiTrash2, FiX } fr
 import { FaStar } from 'react-icons/fa';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { addRecipeToShoppingList, changeRecipeMultiplier, loadShoppingRecipes } from '../shoppingUtils';
+import { addRecipeToShoppingList, changeRecipeMultiplier, loadShoppingRecipes, renameRecipeOnShoppingList } from '../shoppingUtils';
 import ImageLightbox from './ImageLightbox';
 
 function Recipes() {
@@ -20,6 +20,11 @@ function Recipes() {
   const ingredientInputRefs = useRef([]);
   const galleryInputRef = useRef(null);
   const cameraInputRef = useRef(null);
+  // The open recipe is tracked by its position in the list (its name can be
+  // edited); originalNameRef is null for a brand-new recipe, so an unnamed
+  // one can be discarded instead of kept
+  const editIndexRef = useRef(null);
+  const originalNameRef = useRef(null);
   const [recipes, setRecipes] = useState(() => {
     const storedRecipes = JSON.parse(localStorage.getItem('recipes'));
     if (storedRecipes) {
@@ -57,21 +62,24 @@ function Recipes() {
   }, [selectedRecipe, editMode]);
 
   const handleAddRecipe = () => {
-    if (newRecipe && !recipes.find(i => i.name.toLowerCase() === newRecipe.toLowerCase())) {
-      const capitalizedRecipe = {
-        name: newRecipe.charAt(0).toUpperCase() + newRecipe.slice(1),
-        score: 0,
-        portions: 1,
-        ingredients: [],
-        comment: '',
-        images: []
-      };
-      setRecipes([...recipes, capitalizedRecipe]);
-      setNewRecipe('');
-      setSearchTerm('');
-      setSelectedRecipe(capitalizedRecipe);
-      setEditMode(true);
-    }
+    const name = newRecipe.trim();
+    if (name && recipes.find(i => i.name.toLowerCase() === name.toLowerCase())) return;
+    // With an empty bar the recipe starts blank and gets named in the popup
+    const capitalizedRecipe = {
+      name: name ? name.charAt(0).toUpperCase() + name.slice(1) : '',
+      score: 0,
+      portions: 1,
+      ingredients: [],
+      comment: '',
+      images: []
+    };
+    editIndexRef.current = recipes.length;
+    originalNameRef.current = null;
+    setRecipes([...recipes, capitalizedRecipe]);
+    setNewRecipe('');
+    setSearchTerm('');
+    setSelectedRecipe(capitalizedRecipe);
+    setEditMode(true);
   };
 
   const [shoppingRecipes, setShoppingRecipes] = useState(() => loadShoppingRecipes());
@@ -92,12 +100,6 @@ function Recipes() {
     setShoppingRecipes(updated);
   };
 
-  const handleDeleteRecipe = (e, recipeName) => {
-    e.stopPropagation();
-    const updatedRecipes = recipes.filter(recipe => recipe.name !== recipeName);
-    setRecipes(updatedRecipes);
-  };
-  
   // Recipes whose name contains the query come first; recipes that only
   // contain an ingredient matching the query follow
   const query = searchTerm.toLowerCase();
@@ -116,6 +118,8 @@ function Recipes() {
   const filteredRecipes = [...nameMatches, ...ingredientMatches];
 
   const handleRecipeClick = (recipe) => {
+    editIndexRef.current = recipes.indexOf(recipe);
+    originalNameRef.current = recipe.name;
     setSelectedRecipe(recipe);
     setEditMode(false);
   };
@@ -138,21 +142,46 @@ function Recipes() {
     }
   };
 
-  const handleClosePopup = () => {
-    if (editMode && selectedRecipe) {
-      let finalRecipe = { ...selectedRecipe };
-      finalRecipe.ingredients = finalRecipe.ingredients.filter(ing => !(ing.name === '' && ing.quantity === ''));
-      handleSave(finalRecipe);
-      syncNewIngredients(finalRecipe.ingredients);
+  // Leaving edit mode: tidy the recipe up and commit it. Returns false when
+  // the popup must stay open (name taken), null when the recipe was discarded
+  // (a brand-new one left unnamed), or the recipe that was kept.
+  const finalizeEdit = () => {
+    let finalRecipe = { ...selectedRecipe };
+    finalRecipe.ingredients = finalRecipe.ingredients.filter(ing => !(ing.name === '' && ing.quantity === ''));
+    const name = finalRecipe.name.trim();
+    const capitalized = name.charAt(0).toUpperCase() + name.slice(1);
+    if (name && recipes.some((r, i) => i !== editIndexRef.current && r.name.toLowerCase() === name.toLowerCase())) {
+      alert(`There is already a recipe called "${capitalized}".`);
+      return false;
     }
+    if (!name) {
+      if (originalNameRef.current === null) {
+        setRecipes(recipes.filter((_, i) => i !== editIndexRef.current));
+        return null;
+      }
+      finalRecipe.name = originalNameRef.current; // renamed to nothing: keep the old name
+    } else {
+      finalRecipe.name = capitalized;
+    }
+    if (originalNameRef.current && originalNameRef.current !== finalRecipe.name) {
+      setShoppingRecipes(renameRecipeOnShoppingList(originalNameRef.current, finalRecipe.name));
+    }
+    originalNameRef.current = finalRecipe.name;
+    handleSave(finalRecipe);
+    syncNewIngredients(finalRecipe.ingredients);
+    return finalRecipe;
+  };
+
+  const handleClosePopup = () => {
+    if (editMode && selectedRecipe && finalizeEdit() === false) return;
     setSelectedRecipe(null);
     setEditMode(false);
   };
 
   const handleSave = (updatedRecipe) => {
     setSelectedRecipe(updatedRecipe);
-    const updatedRecipes = recipes.map(recipe =>
-      recipe.name === updatedRecipe.name ? updatedRecipe : recipe
+    const updatedRecipes = recipes.map((recipe, i) =>
+      i === editIndexRef.current ? updatedRecipe : recipe
     );
     setRecipes(updatedRecipes);
   };
@@ -163,7 +192,8 @@ function Recipes() {
   };
 
   const handlePortionsChange = (delta) => {
-    const portions = Math.max(1, (selectedRecipe.portions || 1) + delta);
+    // 0 portions is allowed — for things that aren't portioned, like a cake
+    const portions = Math.max(0, (selectedRecipe.portions ?? 1) + delta);
     handleSave({ ...selectedRecipe, portions });
   };
 
@@ -412,8 +442,8 @@ function Recipes() {
             {filteredRecipes.length === 0 && recipes.length > 0 && (
               <li className="info-message">No recipes match your search.</li>
             )}
-            {filteredRecipes.map(recipe => (
-              <li key={recipe.name} onClick={() => handleRecipeClick(recipe)} className="recipe-item">
+            {filteredRecipes.map((recipe, idx) => (
+              <li key={idx} onClick={() => handleRecipeClick(recipe)} className="recipe-item">
                 <span className="recipe-item-info">
                   <span>{recipe.name}</span>
                   <span className="recipe-item-meta">
@@ -422,7 +452,9 @@ function Recipes() {
                         {[...Array(recipe.score)].map((_, i) => <FaStar key={i} />)}
                       </span>
                     )}
-                    <span>{recipe.portions || 1} portion{(recipe.portions || 1) > 1 ? 's' : ''}</span>
+                    {(recipe.portions ?? 1) > 0 && (
+                      <span>{recipe.portions ?? 1} portion{(recipe.portions ?? 1) > 1 ? 's' : ''}</span>
+                    )}
                     {recipe.ingredients.length > 0 && (
                       <span>{recipe.ingredients.length} ingredient{recipe.ingredients.length > 1 ? 's' : ''}</span>
                     )}
@@ -460,11 +492,24 @@ function Recipes() {
           <div className="popup" onClick={(e) => e.stopPropagation()}>
             <button className="close-button" onClick={handleClosePopup} aria-label="Close"><FiX /></button>
             <h2 className='recipe-title'>
-              {selectedRecipe.name}
-              {!editMode && (
-                <span className="recipe-portions-inline">
-                  {selectedRecipe.portions || 1} portion{(selectedRecipe.portions || 1) > 1 ? 's' : ''}
-                </span>
+              {editMode ? (
+                <input
+                  type="text"
+                  className="recipe-title-input"
+                  placeholder="Recipe name"
+                  value={selectedRecipe.name}
+                  onChange={(e) => handleSave({ ...selectedRecipe, name: e.target.value })}
+                  autoFocus={selectedRecipe.name === ''}
+                />
+              ) : (
+                <>
+                  {selectedRecipe.name}
+                  {(selectedRecipe.portions ?? 1) > 0 && (
+                    <span className="recipe-portions-inline">
+                      {selectedRecipe.portions ?? 1} portion{(selectedRecipe.portions ?? 1) > 1 ? 's' : ''}
+                    </span>
+                  )}
+                </>
               )}
             </h2>
             <StarRating score={selectedRecipe.score} />
@@ -473,7 +518,7 @@ function Recipes() {
                 <span>Portions:</span>
                 <div className="multiplier-control">
                   <button className="multiplier-button" onClick={() => handlePortionsChange(-1)}>−</button>
-                  <span className="multiplier-value">{selectedRecipe.portions || 1}</span>
+                  <span className="multiplier-value">{selectedRecipe.portions ?? 1}</span>
                   <button className="multiplier-button" onClick={() => handlePortionsChange(1)}>+</button>
                 </div>
               </div>
@@ -703,7 +748,13 @@ function Recipes() {
             <div className="popup-buttons">
               <FiTrash2
                 className="delete-icon"
-                onClick={(e) => { handleDeleteRecipe(e, selectedRecipe.name); handleClosePopup(); }}
+                onClick={() => {
+                  // Remove by position and skip the edit-mode save on close,
+                  // which would put the recipe straight back
+                  setRecipes(recipes.filter((_, i) => i !== editIndexRef.current));
+                  setSelectedRecipe(null);
+                  setEditMode(false);
+                }}
               />
               {isRecipeInList(selectedRecipe.name) ? (
                 <div className="multiplier-control cart-stepper">
@@ -726,10 +777,9 @@ function Recipes() {
               )}
               {editMode ? (
                 <FiCheck className="edit-icon" style={{ color: 'green' }} onClick={() => {
-                  let finalRecipe = { ...selectedRecipe };
-                  finalRecipe.ingredients = finalRecipe.ingredients.filter(ing => !(ing.name === '' && ing.quantity === ''));
-                  handleSave(finalRecipe);
-                  syncNewIngredients(finalRecipe.ingredients);
+                  const result = finalizeEdit();
+                  if (result === false) return;
+                  if (result === null) setSelectedRecipe(null);
                   setEditMode(false);
                 }} />
               ) : (

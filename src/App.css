@@ -514,6 +514,24 @@ li.info-message {
   overflow-wrap: break-word;
 }
 
+/* Name field shown in place of the title while editing */
+.recipe-title-input {
+  font: inherit;
+  color: inherit;
+  width: 100%;
+  padding: 0 0 0.15rem 0;
+  border: none;
+  border-bottom: 2px dashed rgba(46, 125, 50, 0.4);
+  border-radius: 0;
+  background: transparent;
+  outline: none;
+}
+
+.recipe-title-input::placeholder {
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
 .horizontal-line {
   width: 100%;
   margin: 20px auto 10px;

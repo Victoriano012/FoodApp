@@ -78,7 +78,7 @@ export function addRecipeToShoppingList(recipe, multiplier = 1) {
   const list = applyIngredientsToList(loadShoppingList(), baseIngredients, multiplier);
   return persist(list, [
     ...recipes,
-    { name: recipe.name, baseIngredients, multiplier, portions: recipe.portions || 1 },
+    { name: recipe.name, baseIngredients, multiplier, portions: recipe.portions ?? 1 },
   ]);
 }
 
@@ -95,6 +95,13 @@ export function changeRecipeMultiplier(recipeName, delta) {
     ? recipes.filter(r => r.name !== recipeName)
     : recipes.map(r => (r.name === recipeName ? { ...r, multiplier: next } : r));
   return persist(list, updatedRecipes);
+}
+
+// Keep list entries pointing at a recipe after it is renamed
+export function renameRecipeOnShoppingList(oldName, newName) {
+  const recipes = loadShoppingRecipes().map(r => (r.name === oldName ? { ...r, name: newName } : r));
+  localStorage.setItem('shoppingRecipes', JSON.stringify(recipes));
+  return recipes;
 }
 
 export function removeRecipeFromShoppingList(recipeName) {

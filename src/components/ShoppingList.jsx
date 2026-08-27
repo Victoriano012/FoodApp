@@ -82,7 +82,7 @@ function ShoppingList() {
     setViewedRecipe({
       ...(full || { name: listedRecipe.name, score: 0, ingredients: listedRecipe.baseIngredients, comment: '' }),
       multiplier: listedRecipe.multiplier || 1,
-      portions: (full ? full.portions : listedRecipe.portions) || 1
+      portions: (full ? full.portions : listedRecipe.portions) ?? 1
     });
   };
 
@@ -163,7 +163,7 @@ function ShoppingList() {
                 <h3 className="shopping-recipes-title">
                   Recipes on the list
                   <span className="shopping-recipes-total">
-                    {selectedRecipes.reduce((sum, r) => sum + (r.multiplier || 1) * (r.portions || 1), 0)} portions
+                    {selectedRecipes.reduce((sum, r) => sum + (r.multiplier || 1) * (r.portions ?? 1), 0)} portions
                   </span>
                 </h3>
                 <ul>
@@ -175,9 +175,11 @@ function ShoppingList() {
                     >
                       <span className="recipe-item-info">
                         <span>{recipe.name}</span>
-                        <span className="recipe-item-meta">
-                          {(recipe.multiplier || 1) * (recipe.portions || 1)} portion{(recipe.multiplier || 1) * (recipe.portions || 1) > 1 ? 's' : ''}
-                        </span>
+                        {(recipe.portions ?? 1) > 0 && (
+                          <span className="recipe-item-meta">
+                            {(recipe.multiplier || 1) * (recipe.portions ?? 1)} portion{(recipe.multiplier || 1) * (recipe.portions ?? 1) > 1 ? 's' : ''}
+                          </span>
+                        )}
                       </span>
                       <div onClick={(e) => e.stopPropagation()}>
                         <div className="multiplier-control">
@@ -214,11 +216,13 @@ function ShoppingList() {
               {viewedRecipe.multiplier > 1 && (
                 <span className="recipe-multiplier-badge">×{viewedRecipe.multiplier}</span>
               )}
-              <span className="recipe-portions-inline">
-                {viewedRecipe.portions} portion{viewedRecipe.portions > 1 ? 's' : ''}
-                {viewedRecipe.multiplier > 1 &&
-                  ` · ${viewedRecipe.multiplier * viewedRecipe.portions} on the list`}
-              </span>
+              {viewedRecipe.portions > 0 && (
+                <span className="recipe-portions-inline">
+                  {viewedRecipe.portions} portion{viewedRecipe.portions > 1 ? 's' : ''}
+                  {viewedRecipe.multiplier > 1 &&
+                    ` · ${viewedRecipe.multiplier * viewedRecipe.portions} on the list`}
+                </span>
+              )}
             </h2>
             <div className="star-rating">
               {[1, 2, 3, 4, 5].map(i => (
