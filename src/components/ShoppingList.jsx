@@ -5,6 +5,7 @@ import { FaStar } from 'react-icons/fa';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { changeRecipeMultiplier, loadShoppingList, loadShoppingRecipes, removeRecipeFromShoppingList } from '../shoppingUtils';
+import { getData, setData } from '../store';
 import ImageLightbox from './ImageLightbox';
 
 function ShoppingList() {
@@ -15,15 +16,15 @@ function ShoppingList() {
   const [items, setItems] = useState(() => loadShoppingList());
   const [selectedRecipes, setSelectedRecipes] = useState(() => loadShoppingRecipes());
   const [allIngredients, setAllIngredients] = useState(() => {
-    return JSON.parse(localStorage.getItem('ingredients')) || [];
+    return getData('ingredients') || [];
   });
 
   useEffect(() => {
-    localStorage.setItem('shoppingList', JSON.stringify(items));
+    setData('shoppingList', items);
   }, [items]);
 
   useEffect(() => {
-    localStorage.setItem('shoppingRecipes', JSON.stringify(selectedRecipes));
+    setData('shoppingRecipes', selectedRecipes);
   }, [selectedRecipes]);
 
   // The Ingredients tab is the source of truth for units
@@ -41,7 +42,7 @@ function ShoppingList() {
       if (!allIngredients.find(i => i.name.toLowerCase() === name.toLowerCase())) {
         const updated = [...allIngredients, { name: capitalized, unit: '' }];
         setAllIngredients(updated);
-        localStorage.setItem('ingredients', JSON.stringify(updated));
+        setData('ingredients', updated);
       }
       setItems([...items, {
         name: capitalized,
@@ -85,7 +86,7 @@ function ShoppingList() {
 
   const handleViewRecipe = (listedRecipe) => {
     // Show the full recipe if it still exists; fall back to the stored snapshot
-    const allRecipes = JSON.parse(localStorage.getItem('recipes')) || [];
+    const allRecipes = getData('recipes') || [];
     const full = allRecipes.find(r => r.name === listedRecipe.name);
     setViewedRecipe({
       ...(full || { name: listedRecipe.name, score: 0, ingredients: listedRecipe.baseIngredients, comment: '' }),

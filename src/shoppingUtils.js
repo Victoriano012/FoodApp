@@ -3,18 +3,20 @@
 // multiplier, so the multiplier can be changed at any time and the item
 // quantities adjust by the difference.
 
+import { getData, setData } from './store';
+
 const unitFor = (knownIngredients, name, fallback = '') => {
   const known = knownIngredients.find(i => i.name.toLowerCase() === name.toLowerCase());
   return known ? known.unit : fallback;
 };
 
 export function loadShoppingList() {
-  return (JSON.parse(localStorage.getItem('shoppingList')) || [])
+  return (getData('shoppingList') || [])
     .map(item => ({ quantity: '', unit: '', ...item }));
 }
 
 export function loadShoppingRecipes() {
-  const stored = JSON.parse(localStorage.getItem('shoppingRecipes')) || [];
+  const stored = getData('shoppingRecipes') || [];
   // Migrate legacy entries that stored already-scaled ingredients
   return stored.map(r => {
     if (r.baseIngredients) return r;
@@ -32,7 +34,7 @@ export function loadShoppingRecipes() {
 // Add (delta > 0) or subtract (delta < 0) a recipe's base ingredients,
 // delta times, into the item list. Items that reach zero are removed.
 function applyIngredientsToList(list, baseIngredients, delta) {
-  const knownIngredients = JSON.parse(localStorage.getItem('ingredients')) || [];
+  const knownIngredients = getData('ingredients') || [];
   const updated = [...list];
   baseIngredients.forEach(ing => {
     if (!ing.name) return;
@@ -68,8 +70,8 @@ function applyIngredientsToList(list, baseIngredients, delta) {
 }
 
 function persist(list, recipes) {
-  localStorage.setItem('shoppingList', JSON.stringify(list));
-  localStorage.setItem('shoppingRecipes', JSON.stringify(recipes));
+  setData('shoppingList', list);
+  setData('shoppingRecipes', recipes);
   return { list, recipes };
 }
 
@@ -104,7 +106,7 @@ export function changeRecipeMultiplier(recipeName, delta) {
 // Keep list entries pointing at a recipe after it is renamed
 export function renameRecipeOnShoppingList(oldName, newName) {
   const recipes = loadShoppingRecipes().map(r => (r.name === oldName ? { ...r, name: newName } : r));
-  localStorage.setItem('shoppingRecipes', JSON.stringify(recipes));
+  setData('shoppingRecipes', recipes);
   return recipes;
 }
 

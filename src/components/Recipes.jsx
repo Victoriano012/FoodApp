@@ -6,6 +6,7 @@ import { FaStar } from 'react-icons/fa';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { addRecipeToShoppingList, changeRecipeMultiplier, loadShoppingRecipes, renameRecipeOnShoppingList } from '../shoppingUtils';
+import { getData, setData } from '../store';
 import ImageLightbox from './ImageLightbox';
 
 function Recipes() {
@@ -27,7 +28,7 @@ function Recipes() {
   const editIndexRef = useRef(null);
   const originalNameRef = useRef(null);
   const [recipes, setRecipes] = useState(() => {
-    const storedRecipes = JSON.parse(localStorage.getItem('recipes'));
+    const storedRecipes = getData('recipes');
     if (storedRecipes) {
       // Normalize recipes saved before portions/images existed
       return storedRecipes.map(r => ({ portions: 1, images: [], ...r }));
@@ -41,15 +42,11 @@ function Recipes() {
   });
 
   useEffect(() => {
-    try {
-      localStorage.setItem('recipes', JSON.stringify(recipes));
-    } catch {
-      alert('Storage is full — try removing some images.');
-    }
+    setData('recipes', recipes);
   }, [recipes]);
 
   useEffect(() => {
-    const storedIngredients = JSON.parse(localStorage.getItem('ingredients'));
+    const storedIngredients = getData('ingredients');
     if (storedIngredients) {
       setAllIngredients(storedIngredients);
     }
@@ -147,7 +144,7 @@ function Recipes() {
     if (additions.length) {
       const updated = [...allIngredients, ...additions];
       setAllIngredients(updated);
-      localStorage.setItem('ingredients', JSON.stringify(updated));
+      setData('ingredients', updated);
     }
   };
 
@@ -206,7 +203,8 @@ function Recipes() {
     handleSave({ ...selectedRecipe, portions });
   };
 
-  // Downscale to keep localStorage small — full phone photos would fill it fast
+  // Downscale to keep the stored payload small — full phone photos would
+  // blow past the API's request size limit fast
   const resizeImage = (file) => new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => {

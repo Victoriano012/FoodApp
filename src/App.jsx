@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 import { createBrowserRouter, RouterProvider, Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
-import { FiBookOpen, FiShoppingCart, FiList } from 'react-icons/fi';
+import { FiBookOpen, FiShoppingCart, FiList, FiLogOut } from 'react-icons/fi';
 import Recipes from './components/Recipes';
 import ShoppingList from './components/ShoppingList';
 import Ingredients from './components/Ingredients';
+import { hydrate, flush, refresh } from './store';
 import './App.css';
 
 const TAB_ORDER = ['/', '/shopping-list', '/ingredients'];
@@ -177,6 +178,9 @@ function AppShell() {
       onTouchEnd={() => endDrag(false)}
       onTouchCancel={() => endDrag(true)}
     >
+      <a className="signout-link" href="/api/auth/signout" title="Sign out" aria-label="Sign out">
+        <FiLogOut />
+      </a>
       <div className="page-track" ref={trackRef}>
         {showNeighbors && index > 0 && (
           <div className="page-pane" style={{ left: '-100%' }}>
@@ -232,12 +236,44 @@ const router = createBrowserRouter(
         { path: 'ingredients', element: <Ingredients /> },
       ],
     },
-  ],
-  { basename: import.meta.env.BASE_URL }
+  ]
 );
 
+// The app renders only once the user's data is hydrated from the server, so
+// components keep reading it synchronously (getData) like they did localStorage
 function App() {
-  return <RouterProvider router={router} />;
+  const [state, setState] = useState('loading');
+  const [version, setVersion] = useState(0);
+
+  useEffect(() => {
+    hydrate().then(() => setState('ready'), () => setState('error'));
+    // Don't lose the last edits when the (PWA) tab is closed or backgrounded
+    const onPageHide = () => flush(true);
+    // Coming back to the app: pick up edits made on another device (a full
+    // remount is fine — there are no unsaved edits when refresh() succeeds)
+    const onVisible = async () => {
+      if (document.visibilityState === 'visible' && (await refresh())) {
+        setVersion(v => v + 1);
+      }
+    };
+    window.addEventListener('pagehide', onPageHide);
+    document.addEventListener('visibilitychange', onVisible);
+    return () => {
+      window.removeEventListener('pagehide', onPageHide);
+      document.removeEventListener('visibilitychange', onVisible);
+    };
+  }, []);
+
+  if (state === 'loading') return <div className="app-status">Loading…</div>;
+  if (state === 'error') {
+    return (
+      <div className="app-status">
+        Could not load your data.
+        <button onClick={() => window.location.reload()}>Retry</button>
+      </div>
+    );
+  }
+  return <RouterProvider key={version} router={router} />;
 }
 
 export default App;

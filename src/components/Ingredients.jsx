@@ -2,13 +2,14 @@
 import { useState, useEffect } from 'react';
 import { FiTrash2, FiShoppingCart } from 'react-icons/fi';
 import useDragReorder, { moveItem } from '../useDragReorder';
+import { getData, setData } from '../store';
 
 function Ingredients() {
   const [searchTerm, setSearchTerm] = useState('');
   const [newIngredient, setNewIngredient] = useState('');
   const [unitFilter, setUnitFilter] = useState('-');
   const [ingredients, setIngredients] = useState(() => {
-    const storedIngredients = JSON.parse(localStorage.getItem('ingredients'));
+    const storedIngredients = getData('ingredients');
     if (storedIngredients) {
       return storedIngredients;
     } else {
@@ -24,7 +25,7 @@ function Ingredients() {
   });
 
   useEffect(() => {
-    localStorage.setItem('ingredients', JSON.stringify(ingredients));
+    setData('ingredients', ingredients);
   }, [ingredients]);
 
   const handleAddIngredient = () => {
