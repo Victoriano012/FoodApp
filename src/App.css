@@ -161,7 +161,10 @@ nav a.active {
 /* Sign-out icon, floating on the header (present on every tab) */
 .signout-link {
   position: fixed;
-  top: calc(1rem + env(safe-area-inset-top));
+  /* Vertical centre of the header bar: safe area + top padding + half the
+     header's text line (1.7rem font × 1.5 root line-height) */
+  top: calc(env(safe-area-inset-top, 0px) + 0.7rem + (1.7rem * 1.5) / 2);
+  transform: translateY(-50%);
   right: 1rem;
   z-index: 10;
   color: rgba(255, 255, 255, 0.85);
