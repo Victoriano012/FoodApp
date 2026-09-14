@@ -8,12 +8,12 @@ import Ingredients from './components/Ingredients';
 import { hydrate, flush, refresh } from './store';
 import './App.css';
 
-const TAB_ORDER = ['/', '/shopping-list', '/ingredients'];
+const TAB_ORDER = ['/', '/recipes', '/ingredients'];
 
 function pageFor(path) {
-  if (path === '/shopping-list') return <ShoppingList />;
+  if (path === '/recipes') return <Recipes />;
   if (path === '/ingredients') return <Ingredients />;
-  return <Recipes />;
+  return <ShoppingList />;
 }
 
 // Swipe left/right anywhere to move between tabs: the pages follow the finger
@@ -200,15 +200,15 @@ function AppShell() {
         <ul>
           <li className="nav-indicator" aria-hidden="true" ref={indicatorRef} />
           <li>
-            <NavLink to="/" className={({ isActive }) => (isActive ? 'active' : '')}>
-              <FiBookOpen className="nav-icon" />
-              <span>Recipes</span>
+            <NavLink to="/" end className={({ isActive }) => (isActive ? 'active' : '')}>
+              <FiShoppingCart className="nav-icon" />
+              <span>Shopping</span>
             </NavLink>
           </li>
           <li>
-            <NavLink to="/shopping-list" className={({ isActive }) => (isActive ? 'active' : '')}>
-              <FiShoppingCart className="nav-icon" />
-              <span>Shopping</span>
+            <NavLink to="/recipes" className={({ isActive }) => (isActive ? 'active' : '')}>
+              <FiBookOpen className="nav-icon" />
+              <span>Recipes</span>
             </NavLink>
           </li>
           <li>
@@ -231,8 +231,8 @@ const router = createBrowserRouter(
       path: '/',
       element: <AppShell />,
       children: [
-        { index: true, element: <Recipes /> },
-        { path: 'shopping-list', element: <ShoppingList /> },
+        { index: true, element: <ShoppingList /> },
+        { path: 'recipes', element: <Recipes /> },
         { path: 'ingredients', element: <Ingredients /> },
       ],
     },
