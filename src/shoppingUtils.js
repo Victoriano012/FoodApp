@@ -4,11 +4,7 @@
 // quantities adjust by the difference.
 
 import { getData, setData } from './store';
-
-const unitFor = (knownIngredients, name, fallback = '') => {
-  const known = knownIngredients.find(i => i.name.toLowerCase() === name.toLowerCase());
-  return known ? known.unit : fallback;
-};
+import { findByName, knownIngredients, unitLookup } from './utils';
 
 export function loadShoppingList() {
   return (getData('shoppingList') || [])
@@ -34,14 +30,14 @@ export function loadShoppingRecipes() {
 // Add (delta > 0) or subtract (delta < 0) a recipe's base ingredients,
 // delta times, into the item list. Items that reach zero are removed.
 function applyIngredientsToList(list, baseIngredients, delta) {
-  const knownIngredients = getData('ingredients') || [];
+  const known = knownIngredients();
+  const unitFor = unitLookup(known);
   const updated = [...list];
   baseIngredients.forEach(ing => {
     if (!ing.name) return;
     // Ingredients marked as not auto-added (salt, pepper...) never enter or
     // leave the list through recipes
-    const known = knownIngredients.find(i => i.name.toLowerCase() === ing.name.toLowerCase());
-    if (known && known.autoAdd === false) return;
+    if (findByName(known, ing.name)?.autoAdd === false) return;
     const idx = updated.findIndex(i => i.name.toLowerCase() === ing.name.toLowerCase());
     const qtyDelta = (parseFloat(ing.quantity) || 0) * delta;
     if (idx === -1) {
@@ -49,7 +45,7 @@ function applyIngredientsToList(list, baseIngredients, delta) {
         updated.push({
           name: ing.name,
           quantity: qtyDelta ? String(qtyDelta) : '',
-          unit: unitFor(knownIngredients, ing.name, ing.unit || ''),
+          unit: unitFor(ing.name, ing.unit || ''),
           checked: false,
         });
       }
@@ -61,7 +57,7 @@ function applyIngredientsToList(list, baseIngredients, delta) {
         updated[idx] = {
           ...updated[idx],
           quantity: newQty ? String(newQty) : updated[idx].quantity,
-          unit: unitFor(knownIngredients, updated[idx].name, updated[idx].unit),
+          unit: unitFor(updated[idx].name, updated[idx].unit),
         };
       }
     }

@@ -1,0 +1,47 @@
+// Building blocks shared by the three tabs: the page frame with its header,
+// the add/search bar under it, and the scrolling list with its info messages.
+
+export default function TabPage({ title, children }) {
+  return (
+    <div className="ingredients-page">
+      <h1 className="tab-header">{title}</h1>
+      <div className="content">
+        <div className="ingredients-container">{children}</div>
+      </div>
+    </div>
+  );
+}
+
+// Text input that adds on Enter or via the button; `children` go between them
+// (extra fields like a quantity box or unit picker)
+export function AddBar({ placeholder, value, onChange, onAdd, children }) {
+  const onKeyDown = (e) => { if (e.key === 'Enter') onAdd(); };
+  return (
+    <div className="add-ingredient-bar">
+      <input
+        type="text"
+        placeholder={placeholder}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        onKeyDown={onKeyDown}
+      />
+      {children}
+      <button onClick={onAdd}>Add</button>
+    </div>
+  );
+}
+
+// `empty` shows when there is nothing at all, `noMatch` when a search hides
+// everything. `footer` renders after the <ul> (e.g. a second section) and scrolls with it.
+export function ItemList({ total, shown = total, empty, noMatch, children, footer }) {
+  return (
+    <div className="ingredients-list">
+      <ul>
+        {total === 0 && <li className="info-message">{empty}</li>}
+        {shown === 0 && total > 0 && <li className="info-message">{noMatch}</li>}
+        {children}
+      </ul>
+      {footer}
+    </div>
+  );
+}

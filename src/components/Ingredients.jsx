@@ -1,160 +1,108 @@
-
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { FiTrash2, FiShoppingCart } from 'react-icons/fi';
 import useDragReorder, { moveItem } from '../useDragReorder';
 import { getData, setData } from '../store';
+import { capitalize, cx, findByName } from '../utils';
+import TabPage, { AddBar, ItemList } from './TabPage';
+
+// First-time users start with a few ingredients
+const DEFAULT_INGREDIENTS = [
+  { name: 'Apples', unit: '' },
+  { name: 'Bananas', unit: '' },
+  { name: 'Carrots', unit: 'g' },
+  { name: 'Milk', unit: 'g' },
+  { name: 'Bread', unit: '' },
+];
+
+function loadIngredients() {
+  const stored = getData('ingredients');
+  if (stored) return stored;
+  setData('ingredients', DEFAULT_INGREDIENTS);
+  return DEFAULT_INGREDIENTS;
+}
 
 function Ingredients() {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [newIngredient, setNewIngredient] = useState('');
+  const [query, setQuery] = useState('');
   const [unitFilter, setUnitFilter] = useState('-');
-  const [ingredients, setIngredients] = useState(() => {
-    const storedIngredients = getData('ingredients');
-    if (storedIngredients) {
-      return storedIngredients;
-    } else {
-      // Dummy data for first time users
-      return [
-        { name: 'Apples', unit: '' },
-        { name: 'Bananas', unit: '' },
-        { name: 'Carrots', unit: 'g' },
-        { name: 'Milk', unit: 'g' },
-        { name: 'Bread', unit: '' },
-      ];
-    }
-  });
+  const [ingredients, setIngredients] = useState(loadIngredients);
 
-  useEffect(() => {
-    setData('ingredients', ingredients);
-  }, [ingredients]);
+  const saveIngredients = (updated) => {
+    setIngredients(updated);
+    setData('ingredients', updated);
+  };
+
+  const updateIngredient = (name, changes) =>
+    saveIngredients(ingredients.map((ing) => (ing.name === name ? { ...ing, ...changes } : ing)));
 
   const handleAddIngredient = () => {
-    if (newIngredient && !ingredients.find(i => i.name.toLowerCase() === newIngredient.toLowerCase())) {
-      const capitalizedIngredient = newIngredient.charAt(0).toUpperCase() + newIngredient.slice(1);
-      const newUnit = unitFilter === '-' ? '' : unitFilter;
-      setIngredients([...ingredients, { name: capitalizedIngredient, unit: newUnit }]);
-      setNewIngredient('');
-      setSearchTerm('');
-      setUnitFilter('-');
-    }
-  };
-
-  const handleDeleteIngredient = (ingredientName) => {
-    const updatedIngredients = ingredients.filter(ingredient => ingredient.name !== ingredientName);
-    setIngredients(updatedIngredients);
-  };
-
-  const handleUnitChange = (ingredientName, newUnit) => {
-    const updatedIngredients = ingredients.map(ingredient =>
-      ingredient.name === ingredientName ? { ...ingredient, unit: newUnit } : ingredient
-    );
-    setIngredients(updatedIngredients);
-  };
-
-  // autoAdd === false means the ingredient is skipped when a recipe is added
-  // to the shopping list (salt, pepper...); undefined counts as true
-  const handleToggleAutoAdd = (ingredientName) => {
-    setIngredients(ingredients.map(ingredient =>
-      ingredient.name === ingredientName
-        ? { ...ingredient, autoAdd: ingredient.autoAdd === false }
-        : ingredient
-    ));
+    if (!query || findByName(ingredients, query)) return;
+    saveIngredients([...ingredients, { name: capitalize(query), unit: unitFilter === '-' ? '' : unitFilter }]);
+    setQuery('');
+    setUnitFilter('-');
   };
 
   // Browsing shows the manual (drag to rearrange) order; searching or
   // filtering by unit shows matches alphabetically
-  const filtering = searchTerm !== '' || unitFilter !== '-';
+  const filtering = query !== '' || unitFilter !== '-';
   const filteredIngredients = filtering
     ? ingredients
-        .filter(ingredient =>
-          ingredient.name.toLowerCase().startsWith(searchTerm.toLowerCase())
-        )
-        .filter(ingredient =>
-          unitFilter === '-' ? true : ingredient.unit === unitFilter
-        )
+        .filter((ing) => ing.name.toLowerCase().startsWith(query.toLowerCase()))
+        .filter((ing) => unitFilter === '-' || ing.unit === unitFilter)
         .sort((a, b) => a.name.localeCompare(b.name))
     : ingredients;
 
   const { rowRef, rowProps, dragFrom } = useDragReorder(
     filtering ? 0 : ingredients.length,
-    (from, to) => setIngredients(moveItem(ingredients, from, to))
+    (from, to) => saveIngredients(moveItem(ingredients, from, to))
   );
 
   return (
-    <div className="ingredients-page">
-      <h1 className="tab-header">Ingredients</h1>
-      <div className="content">
-        <div className="ingredients-container">
-          <div className="add-ingredient-bar">
-            <input
-              type="text"
-              placeholder="Add or search ingredients"
-              value={newIngredient}
-              onChange={(e) => {
-                setNewIngredient(e.target.value);
-                setSearchTerm(e.target.value);
-              }}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  handleAddIngredient();
-                }
-              }}
-            />
-            <select
-              value={unitFilter}
-              onChange={(e) => setUnitFilter(e.target.value)}
-              className="unit-filter"
-            >
-              <option value="-">-</option>
-              <option value=""> </option>
-              <option value="g">g</option>
-              <option value="mL">mL</option>
-            </select>
-            <button onClick={handleAddIngredient}>Add</button>
-          </div>
-          <ul className="ingredients-list">
-            {ingredients.length === 0 && (
-              <li className="info-message">Your ingredients list is empty. Add some ingredients to get started.</li>
-            )}
-            {filteredIngredients.length === 0 && ingredients.length > 0 && (
-              <li className="info-message">No ingredients match your search.</li>
-            )}
-            {filteredIngredients.map((ingredient, idx) => (
-              <li
-                key={ingredient.name}
-                ref={rowRef(idx)}
-                {...rowProps(idx)}
-                className={dragFrom === idx ? 'drag-row' : ''}
+    <TabPage title="Ingredients">
+      <AddBar placeholder="Add or search ingredients" value={query} onChange={setQuery} onAdd={handleAddIngredient}>
+        <select value={unitFilter} onChange={(e) => setUnitFilter(e.target.value)} className="unit-filter">
+          <option value="-">-</option>
+          <option value=""> </option>
+          <option value="g">g</option>
+          <option value="mL">mL</option>
+        </select>
+      </AddBar>
+      <ItemList
+        total={ingredients.length}
+        shown={filteredIngredients.length}
+        empty="Your ingredients list is empty. Add some ingredients to get started."
+        noMatch="No ingredients match your search."
+      >
+        {filteredIngredients.map((ingredient, idx) => (
+          <li key={ingredient.name} ref={rowRef(idx)} {...rowProps(idx)} className={cx(dragFrom === idx && 'drag-row')}>
+            <span>{ingredient.name}</span>
+            <div className="row-actions">
+              {/* autoAdd === false: skipped when a recipe is added to the shopping
+                  list (salt, pepper...); undefined counts as true */}
+              <FiShoppingCart
+                className={cx('cart-toggle', ingredient.autoAdd === false && 'off')}
+                title={ingredient.autoAdd === false
+                  ? 'Not added to the shopping list with recipes'
+                  : 'Added to the shopping list with recipes'}
+                onClick={() => updateIngredient(ingredient.name, { autoAdd: ingredient.autoAdd === false })}
+              />
+              <select
+                value={ingredient.unit}
+                onChange={(e) => updateIngredient(ingredient.name, { unit: e.target.value })}
+                className="unit-selector"
               >
-                <span>{ingredient.name}</span>
-                <div>
-                  <FiShoppingCart
-                    className={`cart-toggle${ingredient.autoAdd === false ? ' off' : ''}`}
-                    title={ingredient.autoAdd === false
-                      ? 'Not added to the shopping list with recipes'
-                      : 'Added to the shopping list with recipes'}
-                    onClick={() => handleToggleAutoAdd(ingredient.name)}
-                  />
-                  <select
-                    value={ingredient.unit}
-                    onChange={(e) => handleUnitChange(ingredient.name, e.target.value)}
-                    className="unit-selector"
-                  >
-                    <option value=""> </option>
-                    <option value="g">g</option>
-                    <option value="mL">mL</option>
-                  </select>
-                  <FiTrash2
-                    className="delete-icon"
-                    onClick={() => handleDeleteIngredient(ingredient.name)}
-                  />
-                </div>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </div>
-    </div>
+                <option value=""> </option>
+                <option value="g">g</option>
+                <option value="mL">mL</option>
+              </select>
+              <FiTrash2
+                className="delete-icon"
+                onClick={() => saveIngredients(ingredients.filter((ing) => ing.name !== ingredient.name))}
+              />
+            </div>
+          </li>
+        ))}
+      </ItemList>
+    </TabPage>
   );
 }
 
