@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { FiTrash2 } from 'react-icons/fi';
+import { FaBroom } from 'react-icons/fa';
 import useDragReorder, { moveItem } from '../useDragReorder';
 import { changeRecipeMultiplier, loadShoppingList, loadShoppingRecipes, removeRecipeFromShoppingList } from '../shoppingUtils';
 import { getData, setData } from '../store';
@@ -63,6 +64,7 @@ function ShoppingList() {
 
   // Manual order (drag to rearrange); checked items still sink to the bottom
   const sortedItems = [...items.filter((i) => !i.checked), ...items.filter((i) => i.checked)];
+  const anyChecked = sortedItems.length > 0 && sortedItems[sortedItems.length - 1].checked;
 
   const { rowRef, rowProps, dragFrom } = useDragReorder(sortedItems.length, (from, to) => {
     saveItems(moveItem(sortedItems, from, to));
@@ -86,30 +88,42 @@ function ShoppingList() {
         <ItemList
           total={items.length}
           empty="Your shopping list is empty. Add items you need to buy, or add a recipe from the Recipes tab."
-          footer={listedRecipes.length > 0 && (
-            <div className="shopping-recipes-section">
-              <h3 className="shopping-recipes-title">
-                Recipes on the list
-                <span className="shopping-recipes-total">{totalPortions} portions</span>
-              </h3>
-              <ul>
-                {listedRecipes.map((recipe) => {
-                  const portions = (recipe.multiplier || 1) * (recipe.portions ?? 1);
-                  return (
-                    <RecipeRow
-                      key={recipe.name}
-                      onClick={() => handleViewRecipe(recipe)}
-                      name={recipe.name}
-                      meta={(recipe.portions ?? 1) > 0 && plural(portions, 'portion')}
-                    >
-                      <MultiplierStepper value={`×${recipe.multiplier || 1}`} onStep={(delta) => handleChangeMultiplier(recipe.name, delta)} />
-                      <FiTrash2 className="delete-icon" onClick={() => handleRemoveRecipe(recipe.name)} />
-                    </RecipeRow>
-                  );
-                })}
-              </ul>
-            </div>
-          )}
+          footer={<>
+            {anyChecked && (
+              <button
+                className="clear-bought-button"
+                title="Clear bought items"
+                aria-label="Clear bought items"
+                onClick={() => saveItems(items.filter((i) => !i.checked))}
+              >
+                <FaBroom />
+              </button>
+            )}
+            {listedRecipes.length > 0 && (
+              <div className="shopping-recipes-section">
+                <h3 className="shopping-recipes-title">
+                  Recipes on the list
+                  <span className="shopping-recipes-total">{totalPortions} portions</span>
+                </h3>
+                <ul>
+                  {listedRecipes.map((recipe) => {
+                    const portions = (recipe.multiplier || 1) * (recipe.portions ?? 1);
+                    return (
+                      <RecipeRow
+                        key={recipe.name}
+                        onClick={() => handleViewRecipe(recipe)}
+                        name={recipe.name}
+                        meta={(recipe.portions ?? 1) > 0 && plural(portions, 'portion')}
+                      >
+                        <MultiplierStepper value={`×${recipe.multiplier || 1}`} onStep={(delta) => handleChangeMultiplier(recipe.name, delta)} />
+                        <FiTrash2 className="delete-icon" onClick={() => handleRemoveRecipe(recipe.name)} />
+                      </RecipeRow>
+                    );
+                  })}
+                </ul>
+              </div>
+            )}
+          </>}
         >
           {sortedItems.map((item, idx) => (
             <li

@@ -859,6 +859,27 @@ li.info-message {
   appearance: textfield;
 }
 
+/* Broom under the list: sweeps every ticked (bought) item off it */
+.clear-bought-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.2rem;
+  height: 2.2rem;
+  margin: 0.25rem 0 0 auto;
+  background: none;
+  border: none;
+  border-radius: 50%;
+  font-size: 1.15rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.clear-bought-button:active {
+  background-color: var(--verylightgray);
+}
+
 /* ---------- Recipes on the shopping list ---------- */
 
 .shopping-recipes-section {
