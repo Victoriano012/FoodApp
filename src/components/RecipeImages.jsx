@@ -97,10 +97,10 @@ export default function RecipeImages({ images, name, onChange }) {
         </div>
       )}
       <div className="image-add-buttons">
-        <button onClick={() => galleryInputRef.current.click()}>
+        <button className="pill-button image-add-button" onClick={() => galleryInputRef.current.click()}>
           <FiImage /> Gallery
         </button>
-        <button onClick={() => cameraInputRef.current.click()}>
+        <button className="pill-button image-add-button" onClick={() => cameraInputRef.current.click()}>
           <FiCamera /> Camera
         </button>
         <input ref={galleryInputRef} type="file" accept="image/*" multiple hidden onChange={onFilesPicked} />

@@ -73,7 +73,7 @@ function Ingredients() {
         noMatch="No ingredients match your search."
       >
         {filteredIngredients.map((ingredient, idx) => (
-          <li key={ingredient.name} ref={rowRef(idx)} {...rowProps(idx)} className={cx(dragFrom === idx && 'drag-row')}>
+          <li key={ingredient.name} ref={rowRef(idx)} {...rowProps(idx)} className={cx('list-row', dragFrom === idx && 'drag-row')}>
             <span>{ingredient.name}</span>
             <div className="row-actions">
               {/* autoAdd === false: skipped when a recipe is added to the shopping

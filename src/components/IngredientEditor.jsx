@@ -27,21 +27,21 @@ export default function IngredientEditor({ ingredients, known, unitFor, onChange
           key={index}
           ref={rowRef(index)}
           {...rowProps(index)}
-          className={`ingredient-edit-row ingredient-edit-row-styled${dragFrom === index ? ' drag-row' : ''}`}
+          className={`ingredient-edit-row${dragFrom === index ? ' drag-row' : ''}`}
         >
           <input
             type="number"
             value={ing.quantity}
             onChange={(e) => update(index, { quantity: e.target.value })}
-            className="ingredient-quantity-input ingredient-quantity-input-styled"
+            className="ingredient-quantity-input"
           />
           <input
             type="text"
             value={unitFor(ing.name, ing.unit)}
-            className="ingredient-unit-input ingredient-unit-input-styled"
+            className="ingredient-unit-input"
             readOnly
           />
-          <div style={{ position: 'relative' }}>
+          <div className="ingredient-name-field">
             <input
               type="text"
               value={ing.name}
@@ -53,7 +53,7 @@ export default function IngredientEditor({ ingredients, known, unitFor, onChange
               }}
               onFocus={() => setSuggestFor(index)}
               onBlur={() => setSuggestFor(null)}
-              className="ingredient-name-input ingredient-name-input-styled"
+              className="ingredient-name-input"
             />
             {suggestFor === index && (
               <IngredientSuggestions
@@ -68,13 +68,13 @@ export default function IngredientEditor({ ingredients, known, unitFor, onChange
             )}
           </div>
           <FiTrash2
-            className="delete-icon ingredient-trash-icon-styled"
+            className="delete-icon ingredient-trash-icon"
             onClick={() => onChange(ingredients.filter((_, i) => i !== index))}
           />
         </div>
       ))}
       {(!last || last.name !== '') && (
-        <button onClick={() => onChange([...ingredients, { name: '', quantity: '', unit: '' }])} className="add-ingredient-button-styled">
+        <button onClick={() => onChange([...ingredients, { name: '', quantity: '', unit: '' }])} className="pill-button add-ingredient-button">
           New Ingredient
         </button>
       )}

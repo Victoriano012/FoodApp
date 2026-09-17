@@ -2,7 +2,9 @@ import { useState } from 'react';
 import { FaStar } from 'react-icons/fa';
 import { FiX } from 'react-icons/fi';
 import { cx, plural } from '../utils';
-import ImageLightbox from './ImageLightbox';
+import dynamic from 'next/dynamic';
+
+const ImageLightbox = dynamic(() => import('./ImageLightbox'));
 
 // Presentational pieces shared by the Recipes tab and the Shopping List
 // (whose "recipes on the list" section and read-only popup reuse them).
@@ -11,7 +13,7 @@ import ImageLightbox from './ImageLightbox';
 // the right that don't trigger the row's own click
 export function RecipeRow({ name, meta, className, children, ...rowProps }) {
   return (
-    <li {...rowProps} className={cx('recipe-item', className)}>
+    <li {...rowProps} className={cx('list-row recipe-item', className)}>
       <span className="recipe-item-info">
         <span>{name}</span>
         {meta && <span className="recipe-item-meta">{meta}</span>}
@@ -69,6 +71,8 @@ export function ImageStrip({ images = [], name }) {
           <img
             key={i}
             src={src}
+            loading="lazy"
+            decoding="async"
             className="recipe-image"
             alt={`${name} ${i + 1}`}
             onClick={() => setLightboxIndex(i)}

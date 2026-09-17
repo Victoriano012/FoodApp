@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "test": "node --test tests/*.test.js",
+    "measure:startup": "node scripts/measure-startup.mjs"
   },
   "dependencies": {
     "@electric-sql/pglite": "^0.5.8",
@@ -27,5 +29,6 @@
     "eslint": "^9.36.0",
     "eslint-plugin-react-hooks": "^5.2.0",
     "globals": "^16.4.0"
-  }
+  },
+  "type": "module"
 }

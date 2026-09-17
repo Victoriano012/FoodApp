@@ -1,11 +1,10 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 
-// Gate everything behind Google sign-in: pages redirect, APIs get 401.
+// Gate pages behind Google sign-in. API handlers authenticate their own
+// requests so data and image fetches do not decrypt the session twice.
 export default auth((req) => {
   if (req.auth?.uid != null || process.env.AUTH_DEV_USER) return;
-  if (req.nextUrl.pathname.startsWith('/api'))
-    return NextResponse.json({ error: 'unauthenticated' }, { status: 401 });
   const signIn = new URL('/api/auth/signin', req.nextUrl);
   signIn.searchParams.set('callbackUrl', req.nextUrl.href);
   return NextResponse.redirect(signIn);
@@ -13,5 +12,5 @@ export default auth((req) => {
 
 export const config = {
   // The manifest and icons stay public so the PWA can be installed
-  matcher: ['/((?!api/auth|_next|favicon\\.ico|manifest\\.webmanifest|.*\\.png$).*)'],
+  matcher: ['/((?!api/|_next|favicon\\.ico|manifest\\.webmanifest|.*\\.png$).*)'],
 };

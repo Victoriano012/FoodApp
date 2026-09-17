@@ -26,14 +26,14 @@ The app has three tabs, and you can swipe left/right anywhere to move between th
 ## Tech stack
 
 - [Next.js](https://nextjs.org/) (App Router) — the UI itself is a client-side SPA ([React 19](https://react.dev/) + [React Router](https://reactrouter.com/)) served from a catch-all route
-- [Auth.js v5](https://authjs.dev/) (`next-auth`) with Google sign-in; JWT sessions, everything gated in `proxy.js`
+- [Auth.js v5](https://authjs.dev/) (`next-auth`) with Google sign-in; JWT sessions; pages gated in `proxy.js`, APIs authenticate in their handlers
 - Neon Postgres in production (`DATABASE_URL`), embedded [PGlite](https://pglite.dev/) locally — zero setup
 - Per-user AES-256-GCM encryption at the app layer (`lib/crypto.js`): the database holds only ciphertext
 - `react-markdown` + `remark-gfm` for recipe instructions
 
 ## How data flows
 
-The client hydrates all four collections (`recipes`, `ingredients`, `shoppingList`, `shoppingRecipes`) from `GET /api/data` into an in-memory store (`src/store.js`) before rendering, reads/writes it synchronously like it used to use localStorage, and edits are debounce-saved back with `PUT /api/data`. Coming back to the app re-fetches, so edits made on another device appear. On first login, any data left by the old localStorage version of the app (same origin) is adopted automatically.
+The client hydrates all four collections (`recipes`, `ingredients`, `shoppingList`, `shoppingRecipes`) from `GET /api/data` into an in-memory store (`src/store.js`) before rendering, reads/writes it synchronously like it used to use localStorage, and edits are debounce-saved back with `PUT /api/data`. Writes are serialized and retry with backoff; background refreshes cannot overwrite newer local edits. Related collections save in one atomic database statement. Coming back to the app re-fetches, so edits made on another device appear. On first login, any data left by the old localStorage version of the app (same origin) is adopted automatically.
 
 ## Development
 
@@ -42,9 +42,19 @@ npm install
 npm run dev      # dev server with an embedded local Postgres (data/pg)
 npm run build    # production build
 npm run lint     # run eslint
+npm test         # synchronization regression tests and isolated local database tests
+npm run measure:startup # measure initial JavaScript after a production build
 ```
 
 Set `AUTH_DEV_USER=you@example.com` to bypass Google sign-in locally (no OAuth setup needed). To test on a phone on the same network, run `npm run dev -- -H 0.0.0.0`.
+
+## Performance
+
+The static HTML preloads `/api/data`, so data loading overlaps JavaScript loading. Recipe popups, Markdown, image editing, and the lightbox load on demand; the three tab views stay available immediately for swiping. Initial JavaScript is measured by `npm run measure:startup` (raw and estimated gzip bytes, not load time).
+
+Database connections are reused within a server instance. Existing databases skip schema creation on cold starts; missing tables initialize automatically on first use. API requests authenticate once in their handlers. Returning to the app refreshes server data without replacing unsaved edits, and hiding the app flushes pending changes.
+
+When building, use a normal production environment (`NODE_ENV=production npm run build` if the surrounding shell overrides `NODE_ENV`). Browser smoke checks should use a separate `FOODAPP_PG_DIR`, an empty `DATABASE_URL`, and `AUTH_DEV_USER`; Vercel telemetry endpoints are not available on the local server.
 
 ## Deployment (Vercel)
 

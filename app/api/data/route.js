@@ -41,7 +41,7 @@ export async function GET() {
   try {
     const data = await getUserData(uid);
     if (data.recipes) await migrateInlineImages(uid, data.recipes);
-    return NextResponse.json(data);
+    return NextResponse.json(data, { headers: { 'Cache-Control': 'private, no-store' } });
   } catch (e) {
     return NextResponse.json({ error: String(e) }, { status: 500 });
   }

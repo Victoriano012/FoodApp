@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useMemo, useState, useRef } from 'react';
 import { FiCheck, FiEdit3, FiShoppingCart, FiTrash2 } from 'react-icons/fi';
 import { FaStar } from 'react-icons/fa';
 import useDragReorder, { moveItem } from '../useDragReorder';
@@ -7,7 +7,10 @@ import { getData, setData } from '../store';
 import { addUnknownIngredients, capitalize, findByName, plural } from '../utils';
 import TabPage, { AddBar, ItemList } from './TabPage';
 import { MultiplierStepper, RecipeRow } from './RecipeParts';
-import RecipePopup from './RecipePopup';
+import dynamic from 'next/dynamic';
+import PopupLoading from './PopupLoading';
+
+const RecipePopup = dynamic(() => import('./RecipePopup'), { loading: PopupLoading });
 
 const DEFAULT_RECIPES = [
   { name: 'Apple Pie', score: 5, portions: 4, ingredients: [{ name: 'Apples', quantity: 3, unit: '' }, { name: 'Bananas', quantity: 2, unit: '' }, { name: 'Milk', quantity: 250, unit: 'g' }], comment: 'Classic dessert.\n\n- Peel and slice the apples\n- Mix everything together\n- **Bake at 180°C for 45 min**', images: [] },
@@ -114,7 +117,8 @@ function Recipes() {
     closePopup();
   };
 
-  const listMultiplier = (recipeName) => shoppingRecipes.find((r) => r.name === recipeName)?.multiplier || 0;
+  const multipliers = useMemo(() => new Map(shoppingRecipes.map((r) => [r.name, r.multiplier])), [shoppingRecipes]);
+  const listMultiplier = (recipeName) => multipliers.get(recipeName) || 0;
 
   const handleAddToShoppingList = (recipe) => {
     if (listMultiplier(recipe.name) > 0) return;
@@ -129,8 +133,8 @@ function Recipes() {
   // recipes whose name contains the query (alphabetical) ahead of recipes
   // that only contain an ingredient matching it
   const q = query.toLowerCase();
-  let filteredRecipes = recipes;
-  if (q) {
+  const filteredRecipes = useMemo(() => {
+    if (!q) return recipes;
     const byName = [];
     const byIngredient = [];
     for (const recipe of recipes) {
@@ -138,8 +142,8 @@ function Recipes() {
       else if (recipe.ingredients.some((ing) => ing.name.toLowerCase().includes(q))) byIngredient.push(recipe);
     }
     const alphabetical = (a, b) => a.name.localeCompare(b.name);
-    filteredRecipes = [...byName.sort(alphabetical), ...byIngredient.sort(alphabetical)];
-  }
+    return [...byName.sort(alphabetical), ...byIngredient.sort(alphabetical)];
+  }, [recipes, q]);
 
   // Drag-to-reorder only makes sense on the full, unfiltered list
   const { rowRef, rowProps, dragFrom } = useDragReorder(
@@ -200,7 +204,7 @@ function Recipes() {
               onStep={(delta) => handleChangeMultiplier(selectedRecipe.name, delta)}
             />
             {editMode ? (
-              <FiCheck className="edit-icon" style={{ color: 'green' }} onClick={finishEdit} />
+              <FiCheck className="edit-icon save-icon" onClick={finishEdit} />
             ) : (
               <FiEdit3 className="edit-icon" onClick={() => setEditMode(true)} />
             )}

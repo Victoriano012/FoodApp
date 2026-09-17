@@ -34,7 +34,7 @@ h1 {
   flex-direction: column;
   height: 100vh;
   height: 100dvh;
-  /* Pages scroll internally (see .content); the body never scrolls, so the
+  /* Pages scroll internally (see .tab-content); the body never scrolls, so the
      bottom nav can never be dragged around by the browser */
   overflow: hidden;
   box-sizing: border-box;
@@ -71,7 +71,7 @@ h1 {
   overflow: hidden;
 }
 
-.content {
+.tab-content {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
@@ -197,11 +197,11 @@ nav a.active {
 
 /* ---------- Add / search bar ---------- */
 
-.ingredients-container {
+.tab-body {
   margin: 1rem 0.5rem 0 0.5rem;
 }
 
-.add-ingredient-bar {
+.add-bar {
   display: flex;
   margin-bottom: 2rem;
   align-items: center;
@@ -221,7 +221,7 @@ nav a.active {
   box-sizing: border-box;
 }
 
-.add-ingredient-bar input {
+.add-bar input {
   flex: 1;
   min-width: 0;
   padding: 0.6rem 1rem;
@@ -235,18 +235,16 @@ nav a.active {
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
-.add-ingredient-bar input:focus {
+.add-bar input:focus {
   border-color: var(--green);
   box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.12);
 }
 
-.add-ingredient-bar input::placeholder {
+.add-bar input::placeholder {
   color: var(--text-muted);
 }
 
-.add-ingredient-bar button {
-  padding: 0.6rem 1.15rem;
-  font-size: 1rem;
+.pill-button {
   font-family: inherit;
   font-weight: 600;
   background-color: var(--orange);
@@ -254,17 +252,17 @@ nav a.active {
   border: none;
   cursor: pointer;
   border-radius: 999px;
-  margin-left: 0.5rem;
   transition: background-color 0.15s ease, transform 0.1s ease;
   -webkit-tap-highlight-color: transparent;
 }
 
-.add-ingredient-bar button:hover {
-  background-color: var(--darkorange);
-}
+.pill-button:hover { background-color: var(--darkorange); }
+.pill-button:active { transform: scale(0.96); }
 
-.add-ingredient-bar button:active {
-  transform: scale(0.96);
+.add-button {
+  padding: 0.6rem 1.15rem;
+  font-size: 1rem;
+  margin-left: 0.5rem;
 }
 
 .unit-filter {
@@ -297,7 +295,7 @@ li {
   border-bottom: 1px solid #eee;
 }
 
-.ingredients-container li:not(.info-message) {
+.list-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -317,12 +315,12 @@ li {
   -webkit-touch-callout: none;
 }
 
-.ingredients-container li input {
+.list-row input {
   user-select: text;
   -webkit-user-select: text;
 }
 
-.ingredients-container li select {
+.list-row select {
   padding: 0.25rem;
   border-radius: 8px;
   border: 1px solid #ddd;
@@ -342,26 +340,26 @@ li.info-message {
   border-bottom: none;
 }
 
-.ingredients-container li div {
+.row-actions {
   display: flex;
   align-items: center;
 }
 
-.ingredients-page {
+.tab-page {
   display: flex;
   flex-direction: column;
   flex: 1;
   min-height: 0;
 }
 
-.ingredients-page .content {
+.tab-page .tab-content {
   flex-grow: 1;
   display: flex;
   flex-direction: column;
   min-height: 0;
 }
 
-.ingredients-page .ingredients-container {
+.tab-page .tab-body {
   margin: 0;
   flex-grow: 1;
   display: flex;
@@ -369,12 +367,12 @@ li.info-message {
   min-height: 0;
 }
 
-.ingredients-page .add-ingredient-bar {
+.tab-page .add-bar {
   margin: 0.9rem 0.5rem;
   font-size: 1.05rem;
 }
 
-.ingredients-page .ingredients-list {
+.tab-page .item-list {
   flex-grow: 1;
   overflow-y: auto;
   list-style: none;
@@ -694,7 +692,7 @@ li.info-message {
 
 /* ---------- Ingredient editing in popup ---------- */
 
-.ingredient-edit-row-styled {
+.ingredient-edit-row {
   display: flex;
   justify-content: space-between;
   width: 100%;
@@ -707,12 +705,9 @@ li.info-message {
   -webkit-touch-callout: none;
 }
 
-.ingredient-edit-row-styled input {
+.ingredient-edit-row input {
   user-select: text;
   -webkit-user-select: text;
-}
-
-.ingredient-edit-row-styled input {
   font-family: inherit;
   font-size: inherit;
   color: inherit;
@@ -724,53 +719,37 @@ li.info-message {
   transition: border-color 0.15s ease;
 }
 
-.ingredient-edit-row-styled input:focus {
+.ingredient-edit-row input:focus {
   border-color: var(--green);
 }
 
-.ingredient-quantity-input-styled {
+.ingredient-quantity-input {
   width: 54px;
 }
 
-.ingredient-unit-input-styled {
+.ingredient-unit-input {
   width: 34px;
   text-align: center;
   background-color: var(--verylightgray);
   color: var(--text-muted);
 }
 
-.ingredient-name-input-styled {
+.ingredient-name-input {
   width: 100%;
   max-width: 180px;
 }
 
-.ingredient-trash-icon-styled {
+.ingredient-trash-icon {
   flex-shrink: 0;
   margin-left: 0.2em;
   font-size: 1.3rem;
 }
 
-.add-ingredient-button-styled {
+.add-ingredient-button {
   padding: 0.5rem 1rem;
   font-size: 0.95rem;
-  font-family: inherit;
-  font-weight: 600;
-  background-color: var(--orange);
-  color: white;
-  border: none;
-  cursor: pointer;
-  border-radius: 999px;
   margin-top: 0.2em;
   align-self: flex-start;
-  transition: background-color 0.15s ease, transform 0.1s ease;
-}
-
-.add-ingredient-button-styled:hover {
-  background-color: var(--darkorange);
-}
-
-.add-ingredient-button-styled:active {
-  transform: scale(0.96);
 }
 
 .ingredient-name-field {
@@ -827,7 +806,7 @@ li.info-message {
 
 /* ---------- Shopping list quantities ---------- */
 
-.add-ingredient-bar .shopping-qty-add-input {
+.add-bar .shopping-qty-add-input {
   width: 3.2rem;
   margin-right: 0.5rem;
   flex: none;
@@ -1078,29 +1057,12 @@ li.info-message {
   margin-top: 0.75rem;
 }
 
-.image-add-buttons button {
+.image-add-button {
   display: flex;
   align-items: center;
   gap: 0.4rem;
   padding: 0.45rem 1rem;
   font-size: 0.95rem;
-  font-family: inherit;
-  font-weight: 600;
-  background-color: var(--orange);
-  color: white;
-  border: none;
-  border-radius: 999px;
-  cursor: pointer;
-  transition: background-color 0.15s ease, transform 0.1s ease;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.image-add-buttons button:hover {
-  background-color: var(--darkorange);
-}
-
-.image-add-buttons button:active {
-  transform: scale(0.96);
 }
 
 /* Hold-and-drag reordering */
@@ -1201,3 +1163,5 @@ li.info-message {
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
 }
+
+.save-icon { color: var(--green); }

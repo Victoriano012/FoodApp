@@ -1,13 +1,17 @@
-import { useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { FiTrash2 } from 'react-icons/fi';
 import useDragReorder, { moveItem } from '../useDragReorder';
 import { changeRecipeMultiplier, loadShoppingList, loadShoppingRecipes, removeRecipeFromShoppingList } from '../shoppingUtils';
 import { getData, setData } from '../store';
 import { addUnknownIngredients, capitalize, cx, findByName, knownIngredients, plural, unitLookup } from '../utils';
 import TabPage, { AddBar, ItemList } from './TabPage';
-import { IngredientList, ImageStrip, MultiplierStepper, PopupFrame, RecipeRow } from './RecipeParts';
-import Markdown from './Markdown';
+import { MultiplierStepper, RecipeRow } from './RecipeParts';
+import dynamic from 'next/dynamic';
+import PopupLoading from './PopupLoading';
+
 import IngredientSuggestions from './IngredientSuggestions';
+
+const ShoppingRecipePopup = dynamic(() => import('./ShoppingRecipePopup'), { loading: PopupLoading });
 
 // Feather-style broom (react-icons/fi has none) to match the FiTrash2 icons
 const BroomIcon = () => (
@@ -27,7 +31,7 @@ function ShoppingList() {
   const [items, setItems] = useState(loadShoppingList);
   const [listedRecipes, setListedRecipes] = useState(loadShoppingRecipes);
   const known = knownIngredients();
-  const unitFor = unitLookup(known);
+  const unitFor = useMemo(() => unitLookup(known), [known]);
 
   const saveItems = (updated) => {
     setItems(updated);
@@ -75,7 +79,7 @@ function ShoppingList() {
   };
 
   // Manual order (drag to rearrange); checked items still sink to the bottom
-  const sortedItems = [...items.filter((i) => !i.checked), ...items.filter((i) => i.checked)];
+  const sortedItems = useMemo(() => [...items.filter((i) => !i.checked), ...items.filter((i) => i.checked)], [items]);
   const anyChecked = sortedItems.length > 0 && sortedItems[sortedItems.length - 1].checked;
 
   const { rowRef, rowProps, dragFrom } = useDragReorder(sortedItems.length, (from, to) => {
@@ -158,7 +162,7 @@ function ShoppingList() {
               key={item.name}
               ref={rowRef(idx)}
               {...rowProps(idx)}
-              className={cx('shopping-item', item.checked && 'checked', dragFrom === idx && 'drag-row')}
+              className={cx('list-row shopping-item', item.checked && 'checked', dragFrom === idx && 'drag-row')}
               onClick={() => updateItem(item.name, { checked: !item.checked })}
             >
               <span className="shopping-item-label">
@@ -183,25 +187,7 @@ function ShoppingList() {
       </TabPage>
 
       {viewedRecipe && (
-        <PopupFrame
-          onClose={() => setViewedRecipe(null)}
-          title={<>
-            {viewedRecipe.name}
-            {viewedRecipe.multiplier > 1 && <span className="recipe-multiplier-badge">×{viewedRecipe.multiplier}</span>}
-          </>}
-          score={viewedRecipe.score}
-          portions={viewedRecipe.portions}
-          note={viewedRecipe.multiplier > 1 && ` · ${viewedRecipe.multiplier * viewedRecipe.portions} on the list`}
-        >
-          <IngredientList ingredients={viewedRecipe.ingredients} unitFor={unitFor} />
-          {viewedRecipe.comment && (
-            <>
-              <hr className="horizontal-line" />
-              <Markdown>{viewedRecipe.comment}</Markdown>
-            </>
-          )}
-          <ImageStrip images={viewedRecipe.images} name={viewedRecipe.name} />
-        </PopupFrame>
+        <ShoppingRecipePopup recipe={viewedRecipe} unitFor={unitFor} onClose={() => setViewedRecipe(null)} />
       )}
     </>
   );

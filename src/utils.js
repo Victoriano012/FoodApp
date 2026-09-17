@@ -11,7 +11,8 @@ export const findByName = (list, name) =>
 
 export const plural = (n, word) => `${n} ${word}${n > 1 ? 's' : ''}`;
 
-export const knownIngredients = () => getData('ingredients') || [];
+const EMPTY_INGREDIENTS = [];
+export const knownIngredients = () => getData('ingredients') || EMPTY_INGREDIENTS;
 
 // The Ingredients tab is the source of truth for units — a recipe's stored
 // unit is only a fallback for ingredients that were deleted from there.

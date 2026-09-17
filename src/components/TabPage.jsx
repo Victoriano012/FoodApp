@@ -4,10 +4,10 @@ import { useState } from 'react';
 
 export default function TabPage({ title, children }) {
   return (
-    <div className="ingredients-page">
+    <div className="tab-page">
       <h1 className="tab-header">{title}</h1>
-      <div className="content">
-        <div className="ingredients-container">{children}</div>
+      <div className="tab-content">
+        <div className="tab-body">{children}</div>
       </div>
     </div>
   );
@@ -32,7 +32,7 @@ export function AddBar({ placeholder, value, onChange, onAdd, suggestions, child
     />
   );
   return (
-    <div className="add-ingredient-bar">
+    <div className="add-bar">
       {suggestions ? (
         <div className="add-bar-field">
           {input}
@@ -40,16 +40,17 @@ export function AddBar({ placeholder, value, onChange, onAdd, suggestions, child
         </div>
       ) : input}
       {children}
-      <button onClick={onAdd}>Add</button>
+      <button className="pill-button add-button" onClick={onAdd}>Add</button>
     </div>
   );
 }
 
 // `empty` shows when there is nothing at all, `noMatch` when a search hides
-// everything. `footer` renders after the <ul> (e.g. a second section) and scrolls with it.
+// everything. Rows (`children`) are <li class="list-row">; `footer` renders
+// after the <ul> (e.g. a second section) and scrolls with it.
 export function ItemList({ total, shown = total, empty, noMatch, children, footer }) {
   return (
-    <div className="ingredients-list">
+    <div className="item-list">
       <ul>
         {total === 0 && <li className="info-message">{empty}</li>}
         {shown === 0 && total > 0 && <li className="info-message">{noMatch}</li>}
