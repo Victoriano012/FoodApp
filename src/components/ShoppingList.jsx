@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { FiTrash2 } from 'react-icons/fi';
-import { FaBroom } from 'react-icons/fa';
 import useDragReorder, { moveItem } from '../useDragReorder';
 import { changeRecipeMultiplier, loadShoppingList, loadShoppingRecipes, removeRecipeFromShoppingList } from '../shoppingUtils';
 import { getData, setData } from '../store';
@@ -8,6 +7,16 @@ import { addUnknownIngredients, capitalize, cx, findByName, plural, unitLookup }
 import TabPage, { AddBar, ItemList } from './TabPage';
 import { IngredientList, ImageStrip, MultiplierStepper, PopupFrame, RecipeRow } from './RecipeParts';
 import Markdown from './Markdown';
+
+// Feather-style broom (react-icons/fi has none) to match the FiTrash2 icons
+const BroomIcon = () => (
+  <svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="21" y1="3" x2="11.5" y2="12.5" />
+    <path d="M10 11l3 3-3 7-7-7z" />
+    <line x1="6" y1="16" x2="8.5" y2="13.5" />
+    <line x1="8" y1="18" x2="10.5" y2="15.5" />
+  </svg>
+);
 
 function ShoppingList() {
   const [viewedRecipe, setViewedRecipe] = useState(null);
@@ -74,6 +83,16 @@ function ShoppingList() {
 
   return (
     <>
+      {anyChecked && (
+        <button
+          className="clear-bought-button"
+          title="Clear bought items"
+          aria-label="Clear bought items"
+          onClick={() => saveItems(items.filter((i) => !i.checked))}
+        >
+          <BroomIcon />
+        </button>
+      )}
       <TabPage title="Shopping List">
         <AddBar placeholder="Add an item to buy" value={newItem} onChange={setNewItem} onAdd={handleAddItem}>
           <input
@@ -88,42 +107,30 @@ function ShoppingList() {
         <ItemList
           total={items.length}
           empty="Your shopping list is empty. Add items you need to buy, or add a recipe from the Recipes tab."
-          footer={<>
-            {anyChecked && (
-              <button
-                className="clear-bought-button"
-                title="Clear bought items"
-                aria-label="Clear bought items"
-                onClick={() => saveItems(items.filter((i) => !i.checked))}
-              >
-                <FaBroom />
-              </button>
-            )}
-            {listedRecipes.length > 0 && (
-              <div className="shopping-recipes-section">
-                <h3 className="shopping-recipes-title">
-                  Recipes on the list
-                  <span className="shopping-recipes-total">{totalPortions} portions</span>
-                </h3>
-                <ul>
-                  {listedRecipes.map((recipe) => {
-                    const portions = (recipe.multiplier || 1) * (recipe.portions ?? 1);
-                    return (
-                      <RecipeRow
-                        key={recipe.name}
-                        onClick={() => handleViewRecipe(recipe)}
-                        name={recipe.name}
-                        meta={(recipe.portions ?? 1) > 0 && plural(portions, 'portion')}
-                      >
-                        <MultiplierStepper value={`×${recipe.multiplier || 1}`} onStep={(delta) => handleChangeMultiplier(recipe.name, delta)} />
-                        <FiTrash2 className="delete-icon" onClick={() => handleRemoveRecipe(recipe.name)} />
-                      </RecipeRow>
-                    );
-                  })}
-                </ul>
-              </div>
-            )}
-          </>}
+          footer={listedRecipes.length > 0 && (
+            <div className="shopping-recipes-section">
+              <h3 className="shopping-recipes-title">
+                Recipes on the list
+                <span className="shopping-recipes-total">{totalPortions} portions</span>
+              </h3>
+              <ul>
+                {listedRecipes.map((recipe) => {
+                  const portions = (recipe.multiplier || 1) * (recipe.portions ?? 1);
+                  return (
+                    <RecipeRow
+                      key={recipe.name}
+                      onClick={() => handleViewRecipe(recipe)}
+                      name={recipe.name}
+                      meta={(recipe.portions ?? 1) > 0 && plural(portions, 'portion')}
+                    >
+                      <MultiplierStepper value={`×${recipe.multiplier || 1}`} onStep={(delta) => handleChangeMultiplier(recipe.name, delta)} />
+                      <FiTrash2 className="delete-icon" onClick={() => handleRemoveRecipe(recipe.name)} />
+                    </RecipeRow>
+                  );
+                })}
+              </ul>
+            </div>
+          )}
         >
           {sortedItems.map((item, idx) => (
             <li

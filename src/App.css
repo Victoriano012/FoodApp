@@ -158,8 +158,10 @@ nav a.active {
   letter-spacing: 0.01em;
 }
 
-/* Sign-out icon, floating on the header (present on every tab) */
-.signout-link {
+/* Header-bar icons: sign out, and (Shopping tab only) the broom that sweeps
+   ticked items off the list */
+.signout-link,
+.clear-bought-button {
   position: fixed;
   /* Vertical centre of the header bar: safe area + top padding + half the
      header's text line (1.7rem font × 1.5 root line-height) */
@@ -170,6 +172,15 @@ nav a.active {
   color: rgba(255, 255, 255, 0.85);
   font-size: 1.2em;
   display: flex;
+}
+
+.clear-bought-button {
+  right: 3.2rem;
+  padding: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
 }
 
 /* Fullscreen message while the data loads (or fails to) */
@@ -857,27 +868,6 @@ li.info-message {
 .shopping-qty-add-input {
   -moz-appearance: textfield;
   appearance: textfield;
-}
-
-/* Broom under the list: sweeps every ticked (bought) item off it */
-.clear-bought-button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.2rem;
-  height: 2.2rem;
-  margin: 0.25rem 0 0 auto;
-  background: none;
-  border: none;
-  border-radius: 50%;
-  font-size: 1.15rem;
-  color: var(--text-muted);
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.clear-bought-button:active {
-  background-color: var(--verylightgray);
 }
 
 /* ---------- Recipes on the shopping list ---------- */
