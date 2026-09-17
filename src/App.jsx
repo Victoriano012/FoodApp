@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
-import { createBrowserRouter, RouterProvider, Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
+import { createBrowserRouter, RouterProvider, Outlet, NavLink, Link, useNavigate, useLocation, redirect } from 'react-router-dom';
 import { FiBookOpen, FiShoppingCart, FiList, FiLogOut } from 'react-icons/fi';
 import Recipes from './components/Recipes';
 import ShoppingList from './components/ShoppingList';
@@ -22,7 +22,9 @@ function pageFor(path) {
 function AppShell() {
   const navigate = useNavigate();
   const { pathname } = useLocation();
-  const index = TAB_ORDER.indexOf(pathname);
+  // Unmatched paths (index -1) exist only until their redirect loader
+  // resolves; treat them as the default tab so the nav/swipe maths stay sane
+  const index = Math.max(0, TAB_ORDER.indexOf(pathname));
   const trackRef = useRef(null);
   const indicatorRef = useRef(null);
   const drag = useRef(null);
@@ -223,6 +225,17 @@ function AppShell() {
   );
 }
 
+function ErrorPage() {
+  return (
+    <div className="app-status">
+      Something went wrong.
+      <Link to="/" reloadDocument>Back to the app</Link>
+    </div>
+  );
+}
+
+const toHome = () => redirect('/');
+
 // The data router (instead of <BrowserRouter>) is what makes
 // navigate(..., { flushSync: true }) actually commit synchronously
 const router = createBrowserRouter(
@@ -230,10 +243,14 @@ const router = createBrowserRouter(
     {
       path: '/',
       element: <AppShell />,
+      errorElement: <ErrorPage />,
       children: [
         { index: true, element: <ShoppingList /> },
         { path: 'recipes', element: <Recipes /> },
         { path: 'ingredients', element: <Ingredients /> },
+        // Pre-3e054f3 URL still open in PWA sessions / bookmarks
+        { path: 'shopping-list', loader: toHome },
+        { path: '*', loader: toHome },
       ],
     },
   ]
