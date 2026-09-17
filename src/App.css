@@ -207,6 +207,20 @@ nav a.active {
   align-items: center;
 }
 
+/* Wraps the text input when it has a suggestions dropdown, which is
+   positioned against it (block, not flex, so the dropdown's static position
+   is below the input like in the recipe popup) */
+.add-bar-field {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+
+.add-bar-field > input {
+  width: 100%;
+  box-sizing: border-box;
+}
+
 .add-ingredient-bar input {
   flex: 1;
   min-width: 0;

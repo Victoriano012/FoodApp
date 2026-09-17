@@ -3,10 +3,11 @@ import { FiTrash2 } from 'react-icons/fi';
 import useDragReorder, { moveItem } from '../useDragReorder';
 import { changeRecipeMultiplier, loadShoppingList, loadShoppingRecipes, removeRecipeFromShoppingList } from '../shoppingUtils';
 import { getData, setData } from '../store';
-import { addUnknownIngredients, capitalize, cx, findByName, plural, unitLookup } from '../utils';
+import { addUnknownIngredients, capitalize, cx, findByName, knownIngredients, plural, unitLookup } from '../utils';
 import TabPage, { AddBar, ItemList } from './TabPage';
 import { IngredientList, ImageStrip, MultiplierStepper, PopupFrame, RecipeRow } from './RecipeParts';
 import Markdown from './Markdown';
+import IngredientSuggestions from './IngredientSuggestions';
 
 // Feather-style broom (react-icons/fi has none) to match the FiTrash2 icons
 const BroomIcon = () => (
@@ -24,7 +25,8 @@ function ShoppingList() {
   const [newQuantity, setNewQuantity] = useState('');
   const [items, setItems] = useState(loadShoppingList);
   const [listedRecipes, setListedRecipes] = useState(loadShoppingRecipes);
-  const unitFor = unitLookup();
+  const known = knownIngredients();
+  const unitFor = unitLookup(known);
 
   const saveItems = (updated) => {
     setItems(updated);
@@ -94,7 +96,20 @@ function ShoppingList() {
         </button>
       )}
       <TabPage title="Shopping List">
-        <AddBar placeholder="Add an item to buy" value={newItem} onChange={setNewItem} onAdd={handleAddItem}>
+        <AddBar
+          placeholder="Add an item to buy"
+          value={newItem}
+          onChange={setNewItem}
+          onAdd={handleAddItem}
+          suggestions={(close) => (
+            <IngredientSuggestions
+              typed={newItem}
+              known={known}
+              exclude={items.map((i) => i.name)}
+              onPick={(suggestion) => { setNewItem(suggestion.name); close(); }}
+            />
+          )}
+        >
           <input
             type="number"
             placeholder="Qty"

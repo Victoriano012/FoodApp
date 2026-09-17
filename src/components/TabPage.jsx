@@ -1,5 +1,6 @@
 // Building blocks shared by the three tabs: the page frame with its header,
 // the add/search bar under it, and the scrolling list with its info messages.
+import { useState } from 'react';
 
 export default function TabPage({ title, children }) {
   return (
@@ -13,18 +14,31 @@ export default function TabPage({ title, children }) {
 }
 
 // Text input that adds on Enter or via the button; `children` go between them
-// (extra fields like a quantity box or unit picker)
-export function AddBar({ placeholder, value, onChange, onAdd, children }) {
+// (extra fields like a quantity box or unit picker). Optional `suggestions`
+// is `(close) => <dropdown>`, shown under the input while it is focused and
+// non-empty; the dropdown calls `close` once a suggestion has been picked.
+export function AddBar({ placeholder, value, onChange, onAdd, suggestions, children }) {
+  const [open, setOpen] = useState(false);
   const onKeyDown = (e) => { if (e.key === 'Enter') onAdd(); };
+  const input = (
+    <input
+      type="text"
+      placeholder={placeholder}
+      value={value}
+      onChange={(e) => { onChange(e.target.value); setOpen(true); }}
+      onKeyDown={onKeyDown}
+      onFocus={() => setOpen(true)}
+      onBlur={() => setOpen(false)}
+    />
+  );
   return (
     <div className="add-ingredient-bar">
-      <input
-        type="text"
-        placeholder={placeholder}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        onKeyDown={onKeyDown}
-      />
+      {suggestions ? (
+        <div className="add-bar-field">
+          {input}
+          {open && value !== '' && suggestions(() => setOpen(false))}
+        </div>
+      ) : input}
       {children}
       <button onClick={onAdd}>Add</button>
     </div>

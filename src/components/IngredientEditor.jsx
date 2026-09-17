@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { FiTrash2 } from 'react-icons/fi';
 import useDragReorder, { moveItem } from '../useDragReorder';
 import { findByName } from '../utils';
+import IngredientSuggestions from './IngredientSuggestions';
 
 // The recipe popup's editable ingredient rows: quantity, unit (read-only,
 // follows the Ingredients tab), name with autocomplete, delete; hold a row to
@@ -16,12 +17,6 @@ export default function IngredientEditor({ ingredients, known, unitFor, onChange
 
   const update = (index, updates) =>
     onChange(ingredients.map((ing, i) => (i === index ? { ...ing, ...updates } : ing)));
-
-  const suggestions = ingredients[suggestFor] === undefined ? [] : (() => {
-    const typed = ingredients[suggestFor].name.toLowerCase();
-    const used = new Set(ingredients.map(ing => ing.name.toLowerCase()));
-    return known.filter(i => i.name.toLowerCase().startsWith(typed) && !used.has(i.name.toLowerCase()));
-  })();
 
   const last = ingredients[ingredients.length - 1];
 
@@ -60,22 +55,16 @@ export default function IngredientEditor({ ingredients, known, unitFor, onChange
               onBlur={() => setSuggestFor(null)}
               className="ingredient-name-input ingredient-name-input-styled"
             />
-            {suggestFor === index && suggestions.length > 0 && (
-              // preventDefault keeps the input focused so blur doesn't swallow the tap on a suggestion
-              <div className="suggestions-dropdown" onMouseDown={(e) => e.preventDefault()}>
-                {suggestions.map((suggestion) => (
-                  <div
-                    key={suggestion.name}
-                    className="suggestion-item"
-                    onClick={() => {
-                      update(index, { name: suggestion.name, unit: suggestion.unit });
-                      setSuggestFor(null);
-                    }}
-                  >
-                    {suggestion.name}
-                  </div>
-                ))}
-              </div>
+            {suggestFor === index && (
+              <IngredientSuggestions
+                typed={ing.name}
+                known={known}
+                exclude={ingredients.map((i) => i.name)}
+                onPick={(suggestion) => {
+                  update(index, { name: suggestion.name, unit: suggestion.unit });
+                  setSuggestFor(null);
+                }}
+              />
             )}
           </div>
           <FiTrash2
