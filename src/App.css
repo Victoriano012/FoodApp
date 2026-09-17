@@ -773,6 +773,10 @@ li.info-message {
   transform: scale(0.96);
 }
 
+.ingredient-name-field {
+  position: relative;
+}
+
 .suggestions-dropdown {
   position: absolute;
   background-color: white;
