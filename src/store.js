@@ -9,10 +9,20 @@ let cache = {};
 const dirty = new Set();
 let timer = null;
 
-export async function hydrate() {
+async function load() {
   const res = await fetch('/api/data');
   if (!res.ok) throw new Error('load failed');
-  cache = await res.json();
+  return res.json();
+}
+
+// Kick the request off as soon as this module is evaluated in the browser so it
+// runs in parallel with React hydration instead of after it. (The module is
+// also evaluated on the server when the loading shell is prerendered.)
+const initial = typeof window === 'undefined' ? null : load();
+initial?.catch(() => {}); // hydrate() surfaces the error; avoid an unhandled rejection meanwhile
+
+export async function hydrate() {
+  cache = await (initial ?? load());
   // First login from a device that used the localStorage version: adopt its data
   if (Object.keys(cache).length === 0) {
     for (const key of DATA_KEYS) {

@@ -1,5 +1,7 @@
+'use client';
+
 import { useEffect, useRef, useState } from 'react';
-import { flushSync } from 'react-dom';
+import { flushSync, preload } from 'react-dom';
 import { createBrowserRouter, RouterProvider, Outlet, NavLink, Link, useNavigate, useLocation, redirect } from 'react-router-dom';
 import { FiBookOpen, FiShoppingCart, FiList, FiLogOut } from 'react-icons/fi';
 import Recipes from './components/Recipes';
@@ -237,9 +239,12 @@ function ErrorPage() {
 const toHome = () => redirect('/');
 
 // The data router (instead of <BrowserRouter>) is what makes
-// navigate(..., { flushSync: true }) actually commit synchronously
-const router = createBrowserRouter(
-  [
+// navigate(..., { flushSync: true }) actually commit synchronously. It needs
+// `window`, so it is created on first use rather than at module scope: this
+// module is also evaluated on the server to prerender the loading shell.
+let router;
+const getRouter = () =>
+  (router ??= createBrowserRouter([
     {
       path: '/',
       element: <AppShell />,
@@ -253,14 +258,16 @@ const router = createBrowserRouter(
         { path: '*', loader: toHome },
       ],
     },
-  ]
-);
+  ]));
 
 // The app renders only once the user's data is hydrated from the server, so
 // components keep reading it synchronously (getData) like they did localStorage
 function App() {
   const [state, setState] = useState('loading');
   const [version, setVersion] = useState(0);
+  // Emitted into the prerendered HTML's <head>, so the browser starts fetching
+  // the data while it is still downloading the JS
+  preload('/api/data', { as: 'fetch', crossOrigin: 'anonymous' });
 
   useEffect(() => {
     hydrate().then(() => setState('ready'), () => setState('error'));
@@ -290,7 +297,7 @@ function App() {
       </div>
     );
   }
-  return <RouterProvider key={version} router={router} />;
+  return <RouterProvider key={version} router={getRouter()} />;
 }
 
 export default App;
