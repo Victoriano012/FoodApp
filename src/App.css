@@ -825,13 +825,18 @@ li.info-message {
 }
 
 .shopping-unit {
-  /* Fixed width (fits "mL") so the qty box lines up across rows with/without a unit */
+  /* Fixed width (fits "mL") so the qty box lines up across rows with/without
+     a unit; right-aligned so the unit always hugs the trash icon */
   display: inline-block;
-  width: 1.4rem;
-  text-align: left;
+  width: 1.25rem;
+  text-align: right;
   margin-left: 0.3rem;
   color: var(--text-muted);
   font-size: 0.95rem;
+}
+
+.shopping-item .delete-icon {
+  margin-left: 0.35rem;
 }
 
 .shopping-item.checked .shopping-qty-input,
