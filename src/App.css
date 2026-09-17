@@ -825,6 +825,10 @@ li.info-message {
 }
 
 .shopping-unit {
+  /* Fixed width (fits "mL") so the qty box lines up across rows with/without a unit */
+  display: inline-block;
+  width: 1.4rem;
+  text-align: left;
   margin-left: 0.3rem;
   color: var(--text-muted);
   font-size: 0.95rem;

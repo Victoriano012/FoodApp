@@ -161,7 +161,7 @@ function ShoppingList() {
                         onChange={(e) => handleQuantityChange(item.name, e.target.value)}
                         className="shopping-qty-input"
                       />
-                      {unit && <span className="shopping-unit">{unit}</span>}
+                      <span className="shopping-unit">{unit}</span>
                       <FiTrash2
                         className="delete-icon"
                         onClick={(e) => handleDeleteItem(e, item.name)}
