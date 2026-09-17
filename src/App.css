@@ -825,10 +825,10 @@ li.info-message {
 }
 
 .shopping-unit {
-  /* Fixed width (fits "mL") so the qty box lines up across rows with/without
-     a unit; right-aligned so the unit always hugs the trash icon */
+  /* Reserve the width of "g" even when empty so the qty box lines up across
+     rows with/without a unit and sits tight against unit + trash icon */
   display: inline-block;
-  width: 1.25rem;
+  min-width: 0.65rem;
   text-align: right;
   margin-left: 0.3rem;
   color: var(--text-muted);
