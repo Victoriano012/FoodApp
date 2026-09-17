@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { FiTrash2 } from 'react-icons/fi';
 import useDragReorder, { moveItem } from '../useDragReorder';
 import { changeRecipeMultiplier, loadShoppingList, loadShoppingRecipes, removeRecipeFromShoppingList } from '../shoppingUtils';
@@ -23,6 +23,7 @@ function ShoppingList() {
   const [viewedRecipe, setViewedRecipe] = useState(null);
   const [newItem, setNewItem] = useState('');
   const [newQuantity, setNewQuantity] = useState('');
+  const quantityInputRef = useRef(null);
   const [items, setItems] = useState(loadShoppingList);
   const [listedRecipes, setListedRecipes] = useState(loadShoppingRecipes);
   const known = knownIngredients();
@@ -106,11 +107,16 @@ function ShoppingList() {
               typed={newItem}
               known={known}
               exclude={items.map((i) => i.name)}
-              onPick={(suggestion) => { setNewItem(suggestion.name); close(); }}
+              onPick={(suggestion) => {
+                setNewItem(suggestion.name);
+                close();
+                quantityInputRef.current?.focus();
+              }}
             />
           )}
         >
           <input
+            ref={quantityInputRef}
             type="number"
             placeholder="Qty"
             value={newQuantity}
